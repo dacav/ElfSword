@@ -15,20 +15,29 @@ struct elf_struct {
 
     /* Allocated data */
     union {
-        void *data;
-        Elf32_Ehdr *header;
+        void *data;             /* Memory mapped file */
+        uint8_t *data8b;        /* 8 bit pointer */
+        Elf32_Ehdr *header;     /* Elf header */
     } file;
-    size_t len;
-    int fd;
+    size_t len;                 /* File size */
+    int fd;                     /* File descriptor */
 
     /* Auxiliary data */
-    Elf32_Shdr *secnames;
+    Elf32_Shdr *names;          /* Section for name resolving */
 
 };
 
 /* Sections iteration function.
  * If the return value is true the iteration will be stopped */
-typedef bool (*sec_scan_t)(void *udata, Elf32_Shdr *header);
+typedef bool (*sec_scan_t)(void *udata, elf_t elf, Elf32_Shdr *shdr);
+
+static
+const char *section_name(elf_t elf, Elf32_Shdr *shdr)
+{
+    return (const char *)elf->file.data +
+                         elf->names->sh_offset +
+                         shdr->sh_name;
+}
 
 static
 void scan_sections(elf_t elf, sec_scan_t callback, void *udata)
@@ -38,17 +47,14 @@ void scan_sections(elf_t elf, sec_scan_t callback, void *udata)
     uint32_t sec_count;
     size_t sec_size;
 
-    Elf32_Shdr *old;
-
     header = elf->file.header;
-    cursor = (Elf32_Shdr *)((uint8_t *)elf->file.data + header->e_shoff);
+    cursor = (Elf32_Shdr *)(elf->file.data8b + header->e_shoff);
     sec_count = header->e_shnum;
     sec_size = header->e_sheentsize;
 
     while(sec_count--) {
-        if (!callback(udata, cursor))
+        if (!callback(udata, elf, cursor))
             break;
-        old = cursor;
         cursor = (Elf32_Shdr *)((uint8_t *)cursor + sec_size);
     }
 }
@@ -77,6 +83,8 @@ bool map_file(elf_t elf, const char *filename)
     int fd;
     struct stat buf;
     size_t len;
+    uint8_t *secarray;
+    Elf32_Ehdr *header;
 
     fd = open(filename, O_RDONLY);
     if (fd == -1)
@@ -88,6 +96,11 @@ bool map_file(elf_t elf, const char *filename)
     elf->len = len = buf.st_size;
     elf->file.data = mmap(NULL, len, PROT_READ, MAP_SHARED, fd, 0);
     elf->fd = fd;
+
+    header = elf->file.header;
+    secarray = (elf->file.data8b + header->e_shoff);
+    elf->names = (Elf32_Shdr *) (secarray +
+                 header->e_shstrndx * header->e_sheentsize);
     return true;
 }
 
@@ -96,16 +109,15 @@ bool map_file(elf_t elf, const char *filename)
 /* TESTING                                                              */
 /* -------------------------------------------------------------------- */
 
-bool scanner (void *udata, Elf32_Shdr *header)
+bool scanner (void *udata, elf_t elf, Elf32_Shdr *shdr)
 {
     unsigned *counter = (unsigned *)udata;
     
-    printf("Section id: %03d; Section flags: [%c%c%c]; string: ",
-           *counter,
-           header->sh_flags & SHF_WRITE ? 'w' : '-',
-           header->sh_flags & SHF_ALLOC ? 'a' : '-',
-           header->sh_flags & SHF_EXECINSTR ? 'x' : '-');
-    printf("%s\n", header->sh_type == SHT_STRTAB ? "true  <--" : "false");
+    printf("Section id: %03d (0x%08X):\n", *counter, (unsigned)shdr);
+    printf("    Name:  [%s]\n", section_name(elf, shdr));
+    printf("    Flags: [%c%c%c]\n", shdr->sh_flags & SHF_WRITE     ? 'w' : '-',
+                                    shdr->sh_flags & SHF_ALLOC     ? 'a' : '-',
+                                    shdr->sh_flags & SHF_EXECINSTR ? 'x' : '-');
     (*counter)++;
     return true;
 }

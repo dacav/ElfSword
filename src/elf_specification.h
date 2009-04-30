@@ -36,7 +36,7 @@ typedef struct {
     Elf32_Half      e_phnum;             /* Header number of entries */
     Elf32_Half      e_sheentsize;        /* Section header's size */
     Elf32_Half      e_shnum;             /* Section hdr number of entries */
-    Elf32_Half      e_shstndx;           /* Section hdr string table */
+    Elf32_Half      e_shstrndx;          /* Section hdr string table */
 } Elf32_Ehdr;
 
 /* e_ident indexes for information positions. This includes magic
