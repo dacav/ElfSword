@@ -1,0 +1,16 @@
+.PHONY : all clean
+
+CFLAGS := -Wall
+OBJS := $(addsuffix .o, $(basename $(wildcard *.c)))
+APP := test
+
+all: $(OBJS)
+	$(CC) $(CFLAGS) $(OBJS) -o $(APP)
+
+clean:
+	rm -f $(OBJS) $(APP) $(OBJS:.o=.d)
+
+%.d: %.c
+	$(CC) -MM -MF $@ $<
+
+-include $(OBJS:.o=.d)
