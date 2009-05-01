@@ -22,13 +22,17 @@ int main(int argc, char **argv)
 {
     elf_t elf;
     unsigned counter;
+    Elf32_Shdr *sec;
 
     assert(argc > 1);
     counter = 0;
     elf = elf_map_file(argv[1]);
-    if (elf_check_magic(elf))
+    assert(elf != NULL);
+    if (elf_check_magic(elf)) {
         elf_sections_scan(elf, scanner, (void *)&counter);
-    else
+        sec = elf_section_get(elf, ".bss");
+        printf("\n\n.bss name is: %s\n", elf_section_name(elf, sec));
+    } else
         printf("Invalid magic!\n");
     elf_release_file(elf);
 

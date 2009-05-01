@@ -11,13 +11,12 @@ typedef struct elf_struct * elf_t;
 typedef bool (*sec_scan_t)(void *udata, elf_t elf, Elf32_Shdr *shdr);
 
 elf_t           elf_map_file        (const char *filename);
-const char *    elf_section_name    (elf_t elf, Elf32_Shdr *shdr);
-void            elf_sections_scan   (elf_t elf, sec_scan_t callback, void *udata);
 bool            elf_check_magic     (elf_t elf);
 bool            elf_release_file    (elf_t elf);
+
 const char *    elf_section_name    (elf_t elf, Elf32_Shdr *shdr);
+Elf32_Shdr *    elf_section_get     (elf_t elf, const char *secname);
+
 void            elf_sections_scan   (elf_t elf, sec_scan_t callback, void *udata);
-bool            elf_check_magic     (elf_t elf);
-bool            elf_release_file    (elf_t elf);
 
 #endif /* __ELF_H__ */

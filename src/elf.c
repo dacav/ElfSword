@@ -7,6 +7,9 @@
 #include <fcntl.h>
 #include <assert.h>
 #include <stdlib.h>
+#include <string.h>
+
+#include <search.h>
 
 /* Elf mapping type */
 struct elf_struct {
@@ -22,7 +25,7 @@ struct elf_struct {
 
     /* Auxiliary data */
     Elf32_Shdr *names;          /* Section for name resolving */
-
+    struct hsearch_data namtab; /* Hash optimzier */
 };
 
 const char *elf_section_name(elf_t elf, Elf32_Shdr *shdr)
@@ -68,8 +71,23 @@ bool elf_release_file(elf_t elf)
 
     ret  = munmap(elf->file.data, elf->len);
     ret += close(elf->fd);
+    hdestroy_r(&elf->namtab);
     free(elf);
     return ret >= 0;
+}
+
+static
+bool hash_builder(void *udata, elf_t elf, Elf32_Shdr *shdr)
+{
+    struct hsearch_data *namtab;
+    ENTRY e, *ret;
+
+    namtab = (struct hsearch_data *)udata;
+    e.key = (char *)elf_section_name(elf, shdr);
+    e.data = (void *)shdr;
+    assert(hsearch_r(e, ENTER, &ret, namtab) != 0);
+
+    return true;
 }
 
 elf_t elf_map_file(const char *filename)
@@ -80,10 +98,13 @@ elf_t elf_map_file(const char *filename)
     uint8_t *secarray;
     elf_t elf;
     Elf32_Ehdr *header;
+    struct hsearch_data *namtab;
 
+    /* Control structure allocation */
     elf = malloc(sizeof(struct elf_struct));
     assert(elf != NULL);
 
+    /* File mapping */
     fd = open(filename, O_RDONLY);
     if (fd == -1)
         return NULL;
@@ -94,12 +115,32 @@ elf_t elf_map_file(const char *filename)
     elf->len = len = buf.st_size;
     elf->file.data = mmap(NULL, len, PROT_READ, MAP_SHARED, fd, 0);
     elf->fd = fd;
-
+   
+    /* Section names retriving */
     header = elf->file.header;
+    len = header->e_sheentsize;
     secarray = (elf->file.data8b + header->e_shoff);
-    elf->names = (Elf32_Shdr *) (secarray +
-                 header->e_shstrndx * header->e_sheentsize);
+    elf->names = (Elf32_Shdr *) (secarray + header->e_shstrndx * len);
+
+    /* Hash for name optimizations */
+    namtab = &elf->namtab;
+    memset(namtab, 0, sizeof(struct hsearch_data));
+    assert(hcreate_r(len, namtab));
+    elf_sections_scan(elf, hash_builder, (void *)namtab);
     
     return elf;
+}
+
+Elf32_Shdr *elf_section_get(elf_t elf, const char *secname)
+{
+    ENTRY key = {
+        .key = (char *)secname,
+        .data = NULL
+    };
+    ENTRY *entry;
+
+    return hsearch_r(key, FIND, &entry, &elf->namtab) == 0
+           ? NULL
+           : (Elf32_Shdr *) entry->data;
 }
 

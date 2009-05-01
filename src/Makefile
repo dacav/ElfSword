@@ -1,6 +1,6 @@
 .PHONY : all clean
 
-CFLAGS := -Wall
+CFLAGS := -Wall -D_GNU_SOURCE
 OBJS := $(addsuffix .o, $(basename $(wildcard *.c)))
 APP := test
 
