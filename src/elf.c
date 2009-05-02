@@ -121,7 +121,8 @@ void elf_sections_scan(elf_t elf, sec_scan_t callback, void *udata)
     }
 }
 
-bool elf_check_magic(elf_t elf)
+static
+bool check_magic(elf_t elf)
 {
     unsigned char *magic;
 
@@ -174,14 +175,16 @@ elf_t elf_map_file(const char *filename)
     /* File mapping */
     fd = open(filename, O_RDONLY);
     if (fd == -1)
-        return NULL;
-    if (fstat(fd, &buf) == -1) {
-        close(fd);
-        return NULL;
-    }
+        goto fail0;
+    if (fstat(fd, &buf) == -1)
+        goto fail1;
     elf->len = len = buf.st_size;
     elf->file.data = mmap(NULL, len, PROT_READ, MAP_SHARED, fd, 0);
     elf->fd = fd;
+
+    /* Magic number checking */
+    if (!check_magic(elf))
+        goto fail2;
    
     /* Section names retriving */
     header = elf->file.header;
@@ -199,6 +202,15 @@ elf_t elf_map_file(const char *filename)
     elf_sections_scan(elf, hash_builder, (void *)namtab);
     
     return elf;
+
+  fail2:
+    munmap(elf->file.data, elf->len);
+    close(elf->fd);
+    free(elf);
+  fail1:
+    close(fd);
+  fail0:
+    return NULL;
 }
 
 Elf32_Shdr *elf_section_get(elf_t elf, const char *secname)

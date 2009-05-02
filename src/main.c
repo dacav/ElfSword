@@ -75,10 +75,7 @@ int main(int argc, char **argv)
     counter = 0;
     elf = elf_map_file(argv[1]);
     assert(elf != NULL);
-    if (elf_check_magic(elf)) {
-        elf_sections_scan(elf, scanner, (void *)&counter);
-    } else
-        printf("Invalid magic!\n");
+    elf_sections_scan(elf, scanner, (void *)&counter);
     elf_release_file(elf);
 
     return 0;
