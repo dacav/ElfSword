@@ -64,6 +64,13 @@ const char *elf_symbol_name(elf_t elf, Elf32_Shdr *shdr, Elf32_Sym *yhdr)
     return (const char *)elf->file.data + shdr->sh_offset + yhdr->st_name;
 }
 
+void elf_section_content (elf_t elf, Elf32_Shdr *shdr,
+                          void **cont, size_t *size)
+{
+    *cont = (void *)(elf->file.data8b + shdr->sh_offset);
+    *size = shdr->sh_size;
+}
+
 const char *elf_section_name(elf_t elf, Elf32_Shdr *shdr)
 {
     const Elf32_Shdr *names = elf->names;
