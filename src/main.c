@@ -23,9 +23,37 @@
 #include <stdio.h>
 #include <assert.h>
 
-bool scanner (void *udata, elf_t elf, Elf32_Shdr *shdr)
+const char *types[] = {
+    "None",
+    "Object",
+    "Function",
+    "Section",
+    "File", 
+};
+
+bool symscanner(void *udata, elf_t elf, Elf32_Shdr *shdr, Elf32_Sym *yhdr)
+{
+    unsigned *counter, c;
+    unsigned t;
+   
+    counter = (unsigned *)udata;
+    c = *counter;
+    (*counter)++;
+
+    if (c == 0)
+        printf("    Symbols dump:\n");
+    t = ELF32_ST_TYPE(yhdr->st_info);
+    printf("        Symbol %03d type: %s(%d)\n", c, types[t], t);
+
+    printf("                    name: %s\n", elf_symbol_name(elf, shdr, yhdr));
+    
+    return true;
+}
+
+bool scanner(void *udata, elf_t elf, Elf32_Shdr *shdr)
 {
     unsigned *counter = (unsigned *)udata;
+    unsigned sycnt = 0;
     
     printf("Section id: %03d:\n", *counter);
     printf("    Name:  [%s]\n", elf_section_name(elf, shdr));
@@ -33,6 +61,7 @@ bool scanner (void *udata, elf_t elf, Elf32_Shdr *shdr)
                     shdr->sh_flags & SHF_WRITE     ? 'w' : '-',
                     shdr->sh_flags & SHF_ALLOC     ? 'a' : '-',
                     shdr->sh_flags & SHF_EXECINSTR ? 'x' : '-');
+    elf_symbols_scan(elf, shdr, symscanner, (void *)&sycnt);
     (*counter)++;
     return true;
 }
@@ -41,7 +70,6 @@ int main(int argc, char **argv)
 {
     elf_t elf;
     unsigned counter;
-    Elf32_Shdr *sec;
 
     assert(argc > 1);
     counter = 0;
@@ -49,8 +77,6 @@ int main(int argc, char **argv)
     assert(elf != NULL);
     if (elf_check_magic(elf)) {
         elf_sections_scan(elf, scanner, (void *)&counter);
-        sec = elf_section_get(elf, ".bss");
-        printf("\n\n.bss name is: %s\n", elf_section_name(elf, sec));
     } else
         printf("Invalid magic!\n");
     elf_release_file(elf);

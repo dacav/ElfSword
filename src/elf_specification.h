@@ -195,4 +195,53 @@ enum {
                                          /* flags */
 };
 
+/* -------------------------------------------------------------------- */
+/* Symbols header                                                       */
+/* -------------------------------------------------------------------- */
+
+/* As for section headers, symbol headers are stored as an array of memory
+ * chunks.
+ */
+
+typedef struct {
+    Elf32_Word      st_name;            /* Name index */
+    Elf32_Addr      st_value;           /* Symbol value */
+    Elf32_Word      st_size;            /* Size in bytes */
+    unsigned char   st_info;            /* Symbol type and binding */
+                                        /* attributes */
+    unsigned char   st_other;           /* No meaning */
+    Elf32_Half      st_shndx;           /* Belonging section index */
+} Elf32_Sym;
+
+/* st_info manipulation macros */
+#define ELF32_ST_BIND(i)    ((i)>>4)
+#define ELF32_ST_TYPE(i)    ((i)&0xf)
+#define ELF32_ST_INFO(b,t)  (((b)<<4)+((t)&0xf))
+
+/* st_info binding values */
+enum {
+    STB_LOCAL = 0,                      /* Locally scoped symbol */
+    STB_GLOBAL = 1,                     /* Globally scoped symbol */
+    STB_WEAK = 2,                       /* Globally scoped, lower */
+                                        /* precedence */
+    STB_LOPROC = 13,                    /* Low bound (inclusive) for */
+                                        /* processor specific binding */
+    STB_HIPROC = 15                     /* High bound (inclusive) for */
+                                        /* processor specific binding */
+};
+
+/* st_info type values */
+enum {
+    STT_NOTYPE = 0,                     /* Not specified */
+    STT_OBJECT = 1,                     /* Data object */
+    STT_FUNC = 2,                       /* Function or executable */
+    STT_SECTION = 3,                    /* Section (used for relocation) */
+    STT_FILE = 4,                       /* Source file associated with the */
+                                        /* object file */
+    STT_LOPROC = 13,                    /* Low bound (inclusive) for */
+                                        /* processor specific type */
+    STT_HIPROC = 15                     /* High bound (inclusive) for */
+                                        /* processor specific type */
+};
+
 #endif /* __ELF_SPECIFICATION_H__ */

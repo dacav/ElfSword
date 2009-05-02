@@ -44,14 +44,55 @@ struct elf_struct {
 
     /* Auxiliary data */
     Elf32_Shdr *names;          /* Section for name resolving */
-    struct hsearch_data namtab; /* Hash optimzier */
+    struct hsearch_data namtab; /* Hash optimzier for names */
 };
+
+const char *elf_symbol_name(elf_t elf, Elf32_Shdr *shdr, Elf32_Sym *yhdr)
+{
+    const Elf32_Word sh_type = shdr->sh_type;
+    const Elf32_Ehdr *header = elf->file.header;
+
+    if (sh_type != SHT_SYMTAB && sh_type != SHT_DYNSYM)
+        return NULL;
+    if (yhdr->st_name == 0)
+        return NULL;
+
+    /* shdr->sh_link contains the index of the associated string table.
+     * Moving on the correct table */
+    shdr = (Elf32_Shdr *) ((elf->file.data8b + header->e_shoff)
+                           + (header->e_sheentsize * shdr->sh_link));
+    return (const char *)elf->file.data + shdr->sh_offset + yhdr->st_name;
+}
 
 const char *elf_section_name(elf_t elf, Elf32_Shdr *shdr)
 {
-    return (const char *)elf->file.data +
-                         elf->names->sh_offset +
-                         shdr->sh_name;
+    const Elf32_Shdr *names = elf->names;
+
+    if (names != NULL) {
+        return (const char *)elf->file.data + names->sh_offset +
+                             shdr->sh_name;
+    } else {
+        return NULL;
+    }
+}
+
+void elf_symbols_scan(elf_t elf, Elf32_Shdr *shdr, sym_scan_t callback,
+                      void *udata)
+{
+    const Elf32_Word sh_type = shdr->sh_type;
+    Elf32_Sym *cursor;
+    size_t nentr;
+
+    if (sh_type != SHT_SYMTAB && sh_type != SHT_DYNSYM)
+        return;
+
+    nentr = shdr->sh_size / sizeof(Elf32_Sym);
+    cursor = (Elf32_Sym *)(elf->file.data8b + shdr->sh_offset);
+    while (nentr --) {
+        if (!callback(udata, elf, shdr, cursor))
+            break;
+        cursor ++;
+    }
 }
 
 void elf_sections_scan(elf_t elf, sec_scan_t callback, void *udata)
@@ -66,7 +107,7 @@ void elf_sections_scan(elf_t elf, sec_scan_t callback, void *udata)
     sec_count = header->e_shnum;
     sec_size = header->e_sheentsize;
 
-    while(sec_count--) {
+    while (sec_count --) {
         if (!callback(udata, elf, cursor))
             break;
         cursor = (Elf32_Shdr *)((uint8_t *)cursor + sec_size);
@@ -139,7 +180,10 @@ elf_t elf_map_file(const char *filename)
     header = elf->file.header;
     len = header->e_sheentsize;
     secarray = (elf->file.data8b + header->e_shoff);
-    elf->names = (Elf32_Shdr *) (secarray + header->e_shstrndx * len);
+    if (header->e_shstrndx == SHN_UNDEF)
+        elf->names = NULL;
+    else
+        elf->names = (Elf32_Shdr *) (secarray + header->e_shstrndx * len);
 
     /* Hash for name optimizations */
     namtab = &elf->namtab;
