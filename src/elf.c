@@ -137,11 +137,15 @@ bool elf_release_file(elf_t elf)
 {
     int ret;
 
-    ret  = munmap(elf->file.data, elf->len);
-    ret += close(elf->fd);
-    hdestroy_r(&elf->namtab);
-    free(elf);
-    return ret >= 0;
+    if (elf != NULL) {
+        ret  = munmap(elf->file.data, elf->len);
+        ret += close(elf->fd);
+        hdestroy_r(&elf->namtab);
+        free(elf);
+        return ret >= 0;
+    } else {
+        return false;
+    }
 }
 
 static
@@ -206,10 +210,10 @@ elf_t elf_map_file(const char *filename)
   fail2:
     munmap(elf->file.data, elf->len);
     close(elf->fd);
-    free(elf);
   fail1:
     close(fd);
   fail0:
+    free(elf);
     return NULL;
 }
 
