@@ -23,59 +23,43 @@
 #include <stdio.h>
 #include <assert.h>
 
-const char *types[] = {
-    "None",
-    "Object",
-    "Function",
-    "Section",
-    "File", 
-};
-
-bool symscanner(void *udata, elf_t elf, Elf32_Shdr *shdr, Elf32_Sym *yhdr)
+bool scan(void *udata, Elf elf, Elf32_Phdr *hdr)
 {
-    unsigned *counter, c;
-    unsigned t;
-   
-    counter = (unsigned *)udata;
-    c = *counter;
-    (*counter)++;
-
-    if (c == 0)
-        printf("    Symbols dump:\n");
-    t = ELF32_ST_TYPE(yhdr->st_info);
-    printf("        Symbol %03d type: %s(%d)\n", c, types[t], t);
-
-    printf("                    name: %s\n", elf_symbol_name(elf, shdr, yhdr));
+    int32_t *cnt = (int32_t *)udata;
+    const uint8_t *interp;
+    int32_t permission;
     
-    return true;
-}
-
-bool scanner(void *udata, elf_t elf, Elf32_Shdr *shdr)
-{
-    unsigned *counter = (unsigned *)udata;
-    unsigned sycnt = 0;
-    
-    printf("Section id: %03d:\n", *counter);
-    printf("    Name:  [%s]\n", elf_section_name(elf, shdr));
-    printf("    Flags: [%c%c%c]\n\n", 
-                    shdr->sh_flags & SHF_WRITE     ? 'w' : '-',
-                    shdr->sh_flags & SHF_ALLOC     ? 'a' : '-',
-                    shdr->sh_flags & SHF_EXECINSTR ? 'x' : '-');
-    elf_symbols_scan(elf, shdr, symscanner, (void *)&sycnt);
-    (*counter)++;
+    permission = hdr->p_flags;
+    printf(" %3d | %9p | %4d (%4d) | %9p | %c%c%c |",
+           (*cnt)++,
+           (void *)hdr->p_vaddr,
+           hdr->p_memsz,
+           hdr->p_filesz,
+           (void *)((int32_t)hdr->p_vaddr + hdr->p_memsz),
+           permission & PF_R ? 'r' : '-',
+           permission & PF_W ? 'w' : '-',
+           permission & PF_X ? 'x' : '-');
+    if (hdr->p_type == PT_INTERP) {
+        interp = elf_get_content(elf) + hdr->p_offset;
+        printf(" [interpreter: %s]", interp);
+    }
+    putchar(10);
     return true;
 }
 
 int main(int argc, char **argv)
 {
-    elf_t elf;
-    unsigned counter;
+    Elf elf;
+    int32_t cnt = 0;
 
     assert(argc > 1);
-    counter = 0;
     elf = elf_map_file(argv[1]);
     assert(elf != NULL);
-    elf_sections_scan(elf, scanner, (void *)&counter);
+    printf(" #   | VMA       | SIZE        | END       | PER | INTERP\n"
+           "-----+-----------+-------------+-----------+-----+-------\n");
+    if (!elf_progheader_scan(elf, scan, (void *)&cnt)) {
+        printf("No.\n");
+    }
     elf_release_file(elf);
 
     return 0;
