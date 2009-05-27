@@ -67,8 +67,10 @@ const char *elf_symbol_name(Elf elf, Elf32_Shdr *shdr, Elf32_Sym *yhdr)
 void elf_section_content (Elf elf, Elf32_Shdr *shdr,
                           void **cont, size_t *size)
 {
-    *cont = (void *)(elf->file.data8b + shdr->sh_offset);
-    *size = shdr->sh_size;
+    if (cont != NULL)
+        *cont = (void *)(elf->file.data8b + shdr->sh_offset);
+    if (size != NULL)
+        *size = shdr->sh_size;
 }
 
 const char *elf_section_name(Elf elf, Elf32_Shdr *shdr)
@@ -209,7 +211,6 @@ Elf elf_map_file(const char *filename)
 
   fail2:
     munmap(elf->file.data, elf->len);
-    close(elf->fd);
   fail1:
     close(fd);
   fail0:
