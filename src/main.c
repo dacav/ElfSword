@@ -60,6 +60,9 @@ int main(int argc, char **argv)
     if (!elf_progheader_scan(elf, scan, (void *)&cnt)) {
         printf("No.\n");
     }
+    printf("PTR SYM: %p\n", elf_symbol_get(elf, "mmap"));
+    printf("PTR SYM: %p\n", elf_symbol_get(elf, "mmap"));
+    printf("PTR SYM: %p\n", elf_symbol_get(elf, "mmap"));
     elf_release_file(elf);
 
     return 0;
