@@ -61,8 +61,8 @@ int main(int argc, char **argv)
         printf("No.\n");
     }
     printf("PTR SYM: %p\n", elf_symbol_get(elf, "mmap"));
-    printf("PTR SYM: %p\n", elf_symbol_get(elf, "mmap"));
-    printf("PTR SYM: %p\n", elf_symbol_get(elf, "mmap"));
+    printf("The ELF file is %swell formed\n",
+           elf_check_format(elf) ? "" : "not ");
     elf_release_file(elf);
 
     return 0;
