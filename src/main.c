@@ -23,46 +23,28 @@
 #include <stdio.h>
 #include <assert.h>
 
-bool scan(void *udata, Elf elf, Elf32_Phdr *hdr)
+bool scanner(void *udata, Elf e, Elf32_Dyn *dyn)
 {
-    int32_t *cnt = (int32_t *)udata;
-    const uint8_t *interp;
-    int32_t permission;
-    
-    permission = hdr->p_flags;
-    printf(" %3d | %9p | %4d (%4d) | %9p | %c%c%c |",
-           (*cnt)++,
-           (void *)hdr->p_vaddr,
-           hdr->p_memsz,
-           hdr->p_filesz,
-           (void *)((int32_t)hdr->p_vaddr + hdr->p_memsz),
-           permission & PF_R ? 'r' : '-',
-           permission & PF_W ? 'w' : '-',
-           permission & PF_X ? 'x' : '-');
-    if (hdr->p_type == PT_INTERP) {
-        interp = elf_get_content(elf) + hdr->p_offset;
-        printf(" [interpreter: %s]", interp);
-    }
-    putchar(10);
+    int n = *(int *)udata;
+
+    printf("%02d. Dynamic: d_tag=%d\n", n, dyn->d_tag);
+    *((int *)udata) = n + 1;
     return true;
 }
 
 int main(int argc, char **argv)
 {
     Elf elf;
-    int32_t cnt = 0;
+    int cnt = 0;
 
     assert(argc > 1);
     elf = elf_map_file(argv[1]);
     assert(elf != NULL);
-    printf(" #   | VMA       | SIZE        | END       | PER | INTERP\n"
-           "-----+-----------+-------------+-----------+-----+-------\n");
-    if (!elf_progheader_scan(elf, scan, (void *)&cnt)) {
-        printf("No.\n");
-    }
-    printf("PTR SYM: %p\n", elf_symbol_get(elf, "mmap"));
     printf("The ELF file is %swell formed\n",
            elf_check_format(elf) ? "" : "not ");
+
+    printf("%d\n", elf_dynamic_scan(elf, scanner, (void *)&cnt));
+
     elf_release_file(elf);
 
     return 0;

@@ -30,6 +30,8 @@
 
 #include <search.h>
 
+#define DYNAMIC_SECTION ".dynamic"
+
 /* Elf mapping type */
 struct elf_struct {
 
@@ -365,7 +367,7 @@ static bool prog_header_scanner(void *udata, Elf elf, Elf32_Phdr *phdr)
     bool check;
 
     if (phdr->p_type == PT_DYNAMIC) {
-        sec = elf_section_get(elf, ".dynamic");
+        sec = elf_section_get(elf, DYNAMIC_SECTION);
         check = (sec->sh_offset == phdr->p_offset) &&
                 (sec->sh_size == phdr->p_filesz);
         *((bool *)udata) = check;
@@ -383,6 +385,8 @@ static bool prog_header_scanner(void *udata, Elf elf, Elf32_Phdr *phdr)
 bool elf_check_format(Elf elf)
 {
     bool check;
+    Elf32_Shdr *sec;
+    size_t len;
 
     /* Checking corrispondence between .dynamic section and PT_DYNAMIC
      * segment. This is achieved by scanning the segment array; if there's
@@ -391,8 +395,37 @@ bool elf_check_format(Elf elf)
         !check)
         return false;
 
+    /* Checking the correct size of the .dynamic section: it must contain
+     * a certain number of Elf32_Dyn structures */
+    sec = elf_section_get(elf, DYNAMIC_SECTION);
+    if (sec != NULL) {
+        elf_section_content(elf, sec, NULL, &len);
+        if (len % sizeof(Elf32_Dyn) > 0)
+            return false;
+    }
+ 
     /* TODO add here further checks */
 
     return true;
 }
 
+#include <stdio.h>
+
+bool elf_dynamic_scan(Elf elf, DynSectionScan callback, void *udata)
+{
+    uint8_t *begin, *end;
+    size_t len;
+    Elf32_Shdr *sec;
+
+    sec = elf_section_get(elf, DYNAMIC_SECTION);
+    if (sec == NULL)
+        return false;
+    elf_section_content(elf, sec, (void **)&begin, &len);
+    end = begin + len;
+    while (begin < end) {
+        if (!callback(udata, elf, (Elf32_Dyn *)begin))
+            return false;
+        begin += sizeof(Elf32_Dyn);
+    }
+    return true;
+}

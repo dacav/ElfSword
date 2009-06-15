@@ -45,6 +45,13 @@ Elf elf_map_file(const char *filename);
  */
 bool elf_release_file(Elf elf);
 
+/** Checks wether the ELF file is well formed
+ *
+ * @param elf The Elf object;
+ * @return true if the object is well formed, false otherwise.
+ */
+bool elf_check_format(Elf elf);
+
 /** Returns a const pointer to the first byte of the ELF file mapping
  *
  * @param elf The ELF file;
@@ -188,11 +195,27 @@ typedef bool (*PHeaderScan)(void *udata, Elf elf, Elf32_Phdr *phdr);
  */
 bool elf_progheader_scan(Elf elf, PHeaderScan callback, void *udata);
 
-/** Checks wether the ELF file is well formed
+/** Iteration function for dynamic section entry scanning
+ *
+ * @param udata User data;
+ * @param elf The Elf object;
+ * @param phdr The program header entry;
+ * @return If false the iteration will be stopped.
+ */
+typedef bool (*DynSectionScan) (void *udata, Elf elf, Elf32_Dyn *dyn);
+
+/** Scans through the dynamic section entry
+ *
+ * The callback function provided (@see DynSectionScan) gets called for
+ * each entry in the program header
  *
  * @param elf The Elf object;
- * @return true if the object is well formed, false otherwise.
+ * @param callback The callback to be called;
+ * @param udata User data for the callback;
+ * @return false if the callback interrupted the scan operation or if the
+ *         ELF file doesn't have a program header, true if the scan has
+ *         been completed.
  */
-bool elf_check_format(Elf elf);
+bool elf_dynamic_scan(Elf elf, DynSectionScan callback, void *udata);
 
 #endif /* __ELF_H__ */
