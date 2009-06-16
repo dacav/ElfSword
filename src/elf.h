@@ -20,6 +20,10 @@
 #ifndef __ELF_H__
 #define __ELF_H__
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <stdbool.h>
 #include <stdlib.h>
 #include "elf_specification.h"
@@ -217,5 +221,9 @@ typedef bool (*DynSectionScan) (void *udata, Elf elf, Elf32_Dyn *dyn);
  *         been completed.
  */
 bool elf_dynamic_scan(Elf elf, DynSectionScan callback, void *udata);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* __ELF_H__ */

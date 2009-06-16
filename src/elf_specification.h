@@ -20,6 +20,10 @@
 #ifndef __ELF_SPECIFICATION_H__
 #define __ELF_SPECIFICATION_H__
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <stdint.h>
 
 /* This file specifies data structures representing the internal of an ELF
@@ -303,32 +307,67 @@ typedef struct {
 enum {
     DT_NULL = 0,                        /* End of dynamic array; Ignore
                                          * d_un */
-    DT_NEEDED = 1,                      /* Use d_val */
-    DT_PLTRELSZ = 2,                    /* Use d_val */
-    DT_PLTGOT = 3,                      /* Use d_ptr */
-    DT_HASH = 4,                        /* Use d_ptr */
-    DT_STRTAB = 5,                      /* Use d_ptr */
-    DT_SYMTAB = 6,                      /* Use d_ptr */
-    DT_RELA = 7,                        /* Use d_ptr */
-    DT_RELASZ = 8,                      /* Use d_val */
-    DT_RELAENT = 9,                     /* Use d_val */
-    DT_STRSZ = 10,                      /* Use d_val */
-    DT_SYMENT = 11,                     /* Use d_val */
-    DT_INIT = 12,                       /* Use d_ptr */
-    DT_FINI = 13,                       /* Use d_ptr */
-    DT_SONAME = 14,                     /* Use d_val */
-    DT_RPATH = 15,                      /* Use d_val */
-    DT_SYMBOLIC = 16,                   /* Ignore d_un */
-    DT_REL = 17,                        /* Use d_ptr */
-    DT_RELSZ = 18,                      /* Use d_val */
-    DT_RELENT = 19,                     /* Use d_val */
-    DT_PLTREL = 20,                     /* Use d_val */
-    DT_DEBUG = 21,                      /* Use d_ptr */
-    DT_TEXTREL = 22,                    /* Ignore d_un */
-    DT_JMPREL = 23,                     /* Use d_ptr */
-    DT_BIND_NOW = 24,                   /* Ignore d_un */
+    DT_NEEDED = 1,                      /* Offset of a string, name of a
+                                         * needed library; Use d_val */
+    DT_PLTRELSZ = 2,                    /* Total size of reolocation
+                                         * entries of the procedure
+                                         * linkage table; Use d_val */
+    DT_PLTGOT = 3,                      /* Address of procedure linkage
+                                         * table and/or global offset
+                                         * table; Use d_ptr */
+    DT_HASH = 4,                        /* Address of the symbol hash
+                                         * table; Use d_ptr */
+    DT_STRTAB = 5,                      /* Address of the string table;
+                                         * Use d_ptr */
+    DT_SYMTAB = 6,                      /* Address of the symbol table; 
+                                         * Use d_ptr */
+    DT_RELA = 7,                        /* Address of a part of the
+                                           relocation table to build by
+                                           concatenation; Use d_ptr */
+    DT_RELASZ = 8,                      /* Total size of DT_RELA table;
+                                           Use d_val */
+    DT_RELAENT = 9,                     /* Sie of the DT_RELA entry; Use
+                                           d_val */
+    DT_STRSZ = 10,                      /* Size of the string table;
+                                           Use d_val */
+    DT_SYMENT = 11,                     /* Size of a symbol table entry;
+                                         * Use d_val */
+    DT_INIT = 12,                       /* Address of initialization
+                                         * function; Use d_ptr */
+    DT_FINI = 13,                       /* Address of termination
+                                         * function; Use d_ptr */
+    DT_SONAME = 14,                     /* String table offset, name of
+                                         * the shared object; Use d_val */
+    DT_RPATH = 15,                      /* Library search path string; 
+                                         * Use d_val */
+    DT_SYMBOLIC = 16,                   /* Start linking from the shared
+                                         * object instead of executable;
+                                         * Ignore d_un */
+    DT_REL = 17,                        /* Like DT_RELA, implicit addends;
+                                         * Use d_ptr */
+    DT_RELSZ = 18,                      /* Total size of DT_REL;
+                                         * Use d_val */
+    DT_RELENT = 19,                     /* Entry size of DT_REL;
+                                         * Use d_val */
+    DT_PLTREL = 20,                     /* Type of relocation entry, d_val
+                                         * can be either DT_REL or DT_RELA
+                                         */
+    DT_DEBUG = 21,                      /* For debugging, not specified;
+                                         * Use d_ptr */
+    DT_TEXTREL = 22,                    /* If present non writable
+                                         * segments can be modified;
+                                         * Ignore d_un */
+    DT_JMPREL = 23,                     /* Address of relocation entries
+                                         * of procedure linkage table;
+                                         * Use d_ptr */
+    DT_BIND_NOW = 24,                   /* Do not lazy-bind.
+                                         * Ignore d_un */
     DT_LOPROC = 0x70000000,             /* Use d_val */
     DT_HIPROC = 0x7fffffff              /* Use d_val */
 };
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* __ELF_SPECIFICATION_H__ */
