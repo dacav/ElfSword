@@ -23,19 +23,27 @@
 #include <stdio.h>
 #include <assert.h>
 
-bool scanner(void *udata, Elf e, Elf32_Dyn *dyn)
+bool scanner(void *udata, Elf e, Elf32_Word type,
+             const char *name, Elf32_Sym *sym)
 {
-    int n = *(int *)udata;
-
-    printf("%02d. Dynamic: d_tag=%d\n", n, dyn->d_tag);
-    *((int *)udata) = n + 1;
+    const char * tab;
+    switch (type) {
+        case SHT_SYMTAB:
+            tab = "symtab";
+            break;
+        case SHT_DYNSYM:
+            tab = "dynsym";
+            break;
+        default:
+            tab = "WTF!";
+    }
+    printf("Symbol type: %s (%d); name: %s\n", tab, type, name);
     return true;
 }
 
 int main(int argc, char **argv)
 {
     Elf elf;
-    int cnt = 0;
 
     assert(argc > 1);
     elf = elf_map_file(argv[1]);
@@ -43,8 +51,7 @@ int main(int argc, char **argv)
     printf("The ELF file is %swell formed\n",
            elf_check_format(elf) ? "" : "not ");
 
-    printf("%d\n", elf_dynamic_scan(elf, scanner, (void *)&cnt));
-
+    elf_symbols_scan(elf, scanner, NULL);
     elf_release_file(elf);
 
     return 0;

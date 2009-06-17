@@ -99,18 +99,6 @@ const char * elf_section_name(Elf elf, Elf32_Shdr *shdr);
 void elf_section_content(Elf elf, Elf32_Shdr *shdr, void **cont,
                          size_t *size);
 
-/** Symbol name getter
- *
- * Retrieves the name of the given symbol from the correct string table
- *
- * @param elf The Elf object;
- * @param shdr The section holding the symbol;
- * @param yhdr The symbol header;
- * @return The symbol name or NULL on failure.
- */
-const char * elf_symbol_name(Elf elf, Elf32_Shdr *shdr,
-                             Elf32_Sym *yhdr);
-
 /** Iteration function for section scanning
  *
  * @param udata User data;
@@ -139,12 +127,16 @@ bool elf_sections_scan(Elf elf, SecScan callback, void *udata);
  *
  * @param udata User data;
  * @param elf The Elf object;
- * @param shdr A pointer to the section header;
+ * @param sec_type May be either SHT_SYMTAB or SHT_DYNSYM, depending on 
+ *                 the symbol belonging, respectively the .symtab or the
+ *                 .dymsym section;
+ * @param name The symbol name, already retrieved through the appropriate
+ *             string table
  * @param yhdr A pointer to the symbol header;
  * @return If false the iteration will be stopped.
  */
-typedef bool (*SymScan)(void *udata, Elf elf, Elf32_Shdr *shdr,
-                        Elf32_Sym *yhdr);
+typedef bool (*SymScan)(void *udata, Elf elf, Elf32_Word sym_type,
+                        const char *name, Elf32_Sym *yhdr);
 
 /** Scans through a section's symbols
  *
@@ -154,15 +146,13 @@ typedef bool (*SymScan)(void *udata, Elf elf, Elf32_Shdr *shdr,
  * @note If the callback returns false the iteration will be stopped.
  *
  * @param elf The Elf object;
- * @param shdr The section header;
  * @param callback The callback to be called;
  * @param udata User data for the callback.
  * @return false if the callback interrupted the scan operation or if the
  *         ELF file doesn't have SHT_SYMTAB or SHT_DYNSYM sections, true
  *         if the scan has been completed.
  */
-bool elf_symbols_scan(Elf elf, Elf32_Shdr *shdr, SymScan callback,
-                      void *udata);
+bool elf_symbols_scan(Elf elf, SymScan callback, void *udata);
 
 /** Symbol getter
  *

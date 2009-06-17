@@ -30,7 +30,9 @@
 
 #include <search.h>
 
-#define DYNAMIC_SECTION ".dynamic"
+#define SECTION_DYNAMIC ".dynamic"
+#define SECTION_SYMTAB ".symtab"
+#define SECTION_DYNSYM ".dynsym"
 
 /* Elf mapping type */
 struct elf_struct {
@@ -75,23 +77,6 @@ struct elf_struct {
      */
 };
 
-const char *elf_symbol_name(Elf elf, Elf32_Shdr *shdr, Elf32_Sym *yhdr)
-{
-    const Elf32_Word sh_type = shdr->sh_type;
-    const Elf32_Ehdr *header = elf->file.header;
-
-    if (sh_type != SHT_SYMTAB && sh_type != SHT_DYNSYM)
-        return NULL;
-    if (yhdr->st_name == 0)
-        return NULL;
-
-    /* shdr->sh_link contains the index of the associated string table.
-     * Moving on the correct table */
-    shdr = (Elf32_Shdr *) ((elf->file.data8b + header->e_shoff)
-                           + (header->e_sheentsize * shdr->sh_link));
-    return (const char *)elf->file.data + shdr->sh_offset + yhdr->st_name;
-}
-
 void elf_section_content (Elf elf, Elf32_Shdr *shdr,
                           void **cont, size_t *size)
 {
@@ -113,24 +98,56 @@ const char *elf_section_name(Elf elf, Elf32_Shdr *shdr)
     }
 }
 
-bool elf_symbols_scan(Elf elf, Elf32_Shdr *shdr, SymScan callback,
-                      void *udata)
+static const char *symbol_name(Elf elf, Elf32_Shdr *shdr,
+                               Elf32_Sym *yhdr)
 {
-    const Elf32_Word sh_type = shdr->sh_type;
+    const Elf32_Ehdr *header = elf->file.header;
+
+    if (yhdr->st_name == 0)
+        return NULL;
+
+    /* shdr->sh_link contains the index of the associated string table.
+     * Moving on the correct table */
+    shdr = (Elf32_Shdr *) ((elf->file.data8b + header->e_shoff)
+                           + (header->e_sheentsize * shdr->sh_link));
+    return (const char *)elf->file.data + shdr->sh_offset + yhdr->st_name;
+}
+
+static bool symbols_scan(Elf elf, Elf32_Shdr *shdr, SymScan callback,
+                         void *udata)
+{
     Elf32_Sym *cursor;
     size_t nentr;
+    const char *name;
 
-    if (sh_type != SHT_SYMTAB && sh_type != SHT_DYNSYM)
-        return false;
+    /* NOTE: the shdr->sh_type must be either SHT_SYMTAB or SHT_DYNSYM.
+     *       no checking is performed as this is an internal function
+     *       ...something like
+     * if (shdr->sh_type != SHT_SYMTAB && shdr->sh_type != SHT_DYNSYM)
+     *      error();
+     */
 
     nentr = shdr->sh_size / sizeof(Elf32_Sym);
     cursor = (Elf32_Sym *)(elf->file.data8b + shdr->sh_offset);
     while (nentr --) {
-        if (!callback(udata, elf, shdr, cursor))
+        name = symbol_name(elf, shdr, cursor);
+        if (!callback(udata, elf, shdr->sh_type, name, cursor))
             return false;
         cursor ++;
     }
     return true;
+}
+
+bool elf_symbols_scan(Elf elf, SymScan callback, void *udata)
+{
+    Elf32_Shdr *sec;;
+
+    sec = elf_section_get(elf, SECTION_SYMTAB);
+    if (sec != NULL)
+        if (!symbols_scan(elf, sec, callback, udata))
+            return false;
+    sec = elf_section_get(elf, SECTION_DYNSYM);
+    return symbols_scan(elf, sec, callback, udata);
 }
 
 bool elf_sections_scan(Elf elf, SecScan callback, void *udata)
@@ -298,18 +315,17 @@ struct track {
 };
 
 static
-bool sym_scanner(void *udata, Elf elf, Elf32_Shdr *shdr,
-                 Elf32_Sym *yhdr)
+bool sym_scanner(void *udata, Elf elf, Elf32_Word type,
+                 const char *name, Elf32_Sym *yhdr)
 {
     struct track *t;
-    const char *sym_name;
     ENTRY e, *ret;
 
     t = (struct track *)udata;
 
     /* sym_name may be null if the symbol has no name */
-    if ((sym_name = elf_symbol_name(elf, shdr, yhdr)) != NULL) {
-        if (strcmp(t->name, sym_name) == 0) {
+    if (name != NULL) {
+        if (strcmp(t->name, name) == 0) {
             /* We found the searched symbol */
             t->ret = yhdr;
         }
@@ -318,7 +334,7 @@ bool sym_scanner(void *udata, Elf elf, Elf32_Shdr *shdr,
             elf->symtab_magic ++;
         } else {
             /* We are filling the table with symbol names */
-            e.key = (char *)sym_name;
+            e.key = (char *)name;
             e.data = (void *)yhdr;
             assert(hsearch_r(e, ENTER, &ret, &elf->symtab));
         }
@@ -328,14 +344,9 @@ bool sym_scanner(void *udata, Elf elf, Elf32_Shdr *shdr,
 
 Elf32_Sym *elf_symbol_get(Elf elf, const char *name)
 {
-    Elf32_Shdr *symtab;
     struct hsearch_data *htab;
     ENTRY key, *entry;
     struct track t;
-
-    symtab = elf_section_get(elf, ".symtab");
-    if (symtab == NULL)
-        return NULL;
 
     t.oldmagic = elf->symtab_magic;
     if (t.oldmagic <= 0) {
@@ -347,7 +358,7 @@ Elf32_Sym *elf_symbol_get(Elf elf, const char *name)
         }
         t.name = name;
         t.ret = NULL;
-        elf_symbols_scan(elf, symtab, sym_scanner, (void *)&t);
+        elf_symbols_scan(elf, sym_scanner, (void *)&t);
         elf->symtab_magic *= -1;
         return t.ret;
     } else {
@@ -367,7 +378,7 @@ static bool prog_header_scanner(void *udata, Elf elf, Elf32_Phdr *phdr)
     bool check;
 
     if (phdr->p_type == PT_DYNAMIC) {
-        sec = elf_section_get(elf, DYNAMIC_SECTION);
+        sec = elf_section_get(elf, SECTION_DYNAMIC);
         check = (sec->sh_offset == phdr->p_offset) &&
                 (sec->sh_size == phdr->p_filesz);
         *((bool *)udata) = check;
@@ -397,7 +408,7 @@ bool elf_check_format(Elf elf)
 
     /* Checking the correct size of the .dynamic section: it must contain
      * a certain number of Elf32_Dyn structures */
-    sec = elf_section_get(elf, DYNAMIC_SECTION);
+    sec = elf_section_get(elf, SECTION_DYNAMIC);
     if (sec != NULL) {
         elf_section_content(elf, sec, NULL, &len);
         if (len % sizeof(Elf32_Dyn) > 0)
@@ -417,7 +428,7 @@ bool elf_dynamic_scan(Elf elf, DynSectionScan callback, void *udata)
     size_t len;
     Elf32_Shdr *sec;
 
-    sec = elf_section_get(elf, DYNAMIC_SECTION);
+    sec = elf_section_get(elf, SECTION_DYNAMIC);
     if (sec == NULL)
         return false;
     elf_section_content(elf, sec, (void **)&begin, &len);
