@@ -314,9 +314,8 @@ struct track {
     const char *name;
 };
 
-static
-bool sym_scanner(void *udata, Elf elf, Elf32_Word type,
-                 const char *name, Elf32_Sym *yhdr)
+static bool sym_scanner(void *udata, Elf elf, Elf32_Word type,
+                        const char *name, Elf32_Sym *yhdr)
 {
     struct track *t;
     ENTRY e, *ret;
@@ -419,8 +418,6 @@ bool elf_check_format(Elf elf)
 
     return true;
 }
-
-#include <stdio.h>
 
 bool elf_dynamic_scan(Elf elf, DynSectionScan callback, void *udata)
 {

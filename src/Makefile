@@ -9,6 +9,7 @@ all: $(OBJS)
 
 clean:
 	rm -f $(OBJS) $(APP) $(OBJS:.o=.d)
+	rm -f $(DOCDIR)
 
 %.d: %.c
 	$(CC) -MM -MF $@ $<

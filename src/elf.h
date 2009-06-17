@@ -17,6 +17,11 @@
  * along with ElfSword.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
+
+/*! \file elf.h
+ *
+ * This module allows to extract pieces of information from an ELF file
+ */
 #ifndef __ELF_H__
 #define __ELF_H__
 
@@ -28,189 +33,214 @@ extern "C" {
 #include <stdlib.h>
 #include "elf_specification.h"
 
-/** ELF structure information holding data type */
+/*! \addtogroup elfAccFile */
+/*@{*/
+
+/*! \brief ELF file representation type */
 typedef struct elf_struct * Elf;
 
-/** ELF file mapper
+/*! \brief ELF file mapper
  *
  * Produces an Elf object by mapping the given file in memory
  *
- * @param filename The name of the ELF file to be mapped;
- * @return an Elf object or NULL on failure (i.e. invalid file).
+ * \param filename The name of the ELF file to be mapped;
+ * \return an Elf object or NULL on failure (i.e. invalid file).
  */
 Elf elf_map_file(const char *filename);
 
-/** ELF file releaser
+/*! \brief ELF file releaser
  *
  * Frees the Elf object
  *
- * @param elf The Elf object to be freed;
- * @return true on success, false on failure.
+ * \param elf The Elf object to be freed;
+ * \return true on success, false on failure.
  */
 bool elf_release_file(Elf elf);
 
-/** Checks wether the ELF file is well formed
+/*! \brief Checks wether the ELF file is well formed
  *
- * @param elf The Elf object;
- * @return true if the object is well formed, false otherwise.
+ * \param elf The Elf object;
+ * \return true if the object is well formed, false otherwise.
  */
 bool elf_check_format(Elf elf);
 
-/** Returns a const pointer to the first byte of the ELF file mapping
+/*! \brief Returns a const pointer to the first byte of the ELF file mapping
  *
- * @param elf The ELF file;
- * @return a const pointer to the first byte.
+ * \param elf The ELF file;
+ * \return a const pointer to the first byte.
  */
 const uint8_t * elf_get_content(Elf elf);
 
-/** Section getter
+/*@}*/
+
+/*! \addtogroup elfAccSections */
+/*@{*/
+
+/*! \brief Section getter
  *
  * Retrieves a section by searching the given name on the sections hash
  * table
  *
- * @param elf The Elf object;
- * @param secname The name of the section;
- * @return A pointer to the section header or NULL if there's no such
+ * \param elf The Elf object;
+ * \param secname The name of the section;
+ * \return A pointer to the section header or NULL if there's no such
  *         section.
  */
 Elf32_Shdr * elf_section_get(Elf elf, const char *secname);
 
-/** Section name getter
+/*! \brief Section name getter
  *
  * Retrieves the name of the given section from the ELF string table
  *
- * @param elf The Elf object;
- * @param shdr The section header;
- * @return The section name or NULL if the ELF file doesn't have a string
+ * \param elf The Elf object;
+ * \param shdr The section header;
+ * \return The section name or NULL if the ELF file doesn't have a string
  *         table.
  */
 const char * elf_section_name(Elf elf, Elf32_Shdr *shdr);
 
-/** Section content retriever
+/*! \brief Section content retriever
  *
  * Returns the position of the section's content and its length through
  * parameters side effect.
  *
- * @param elf The Elf object;
- * @param shdr The section header;
- * @param cont The pointer to be moved on the section content;
- * @param size Will contain the size of the section content in bytes.
+ * \param elf The Elf object;
+ * \param shdr The section header;
+ * \param cont The pointer to be moved on the section content;
+ * \param size Will contain the size of the section content in bytes.
  */
 void elf_section_content(Elf elf, Elf32_Shdr *shdr, void **cont,
                          size_t *size);
 
-/** Iteration function for section scanning
+/*! \brief Iteration function for section scanning
  *
- * @param udata User data;
- * @param elf The Elf object;
- * @param shdr A pointer to the section header;
- * @return If false the iteration will be stopped.
+ * \param udata User data;
+ * \param elf The Elf object;
+ * \param shdr A pointer to the section header;
+ * \return If false the iteration will be stopped.
  */
 typedef bool (*SecScan)(void *udata, Elf elf, Elf32_Shdr *shdr);
 
-/** Scans through the sections
+/*! \brief Scans through the sections
  *
- * The callback function provided (@see SecScan) gets called for each
+ * The callback function provided (\see SecScan) gets called for each
  * section in the ELF file
  *
- * @note If the callback returns false the iteration will be stopped.
+ * \note If the callback returns false the iteration will be stopped.
  *
- * @param elf The Elf object;
- * @param callback The callback to be called;
- * @param udata User data for the callback.
- * @return true if the scan has been completed, false if it has been
+ * \param elf The Elf object;
+ * \param callback The callback to be called;
+ * \param udata User data for the callback.
+ * \return true if the scan has been completed, false if it has been
  *         interrupted by the callback.
  */
 bool elf_sections_scan(Elf elf, SecScan callback, void *udata);
 
-/** Iteration function for section's symbols scanning
+/*@}*/
+
+/*! \addtogroup elfAccSymbols */
+/*@{*/
+
+/*! \brief Iteration function for section's symbols scanning
  *
- * @param udata User data;
- * @param elf The Elf object;
- * @param sec_type May be either SHT_SYMTAB or SHT_DYNSYM, depending on 
+ * \param udata User data;
+ * \param elf The Elf object;
+ * \param sec_type May be either SHT_SYMTAB or SHT_DYNSYM, depending on 
  *                 the symbol belonging, respectively the .symtab or the
  *                 .dymsym section;
- * @param name The symbol name, already retrieved through the appropriate
+ * \param name The symbol name, already retrieved through the appropriate
  *             string table
- * @param yhdr A pointer to the symbol header;
- * @return If false the iteration will be stopped.
+ * \param yhdr A pointer to the symbol header;
+ * \return If false the iteration will be stopped.
  */
 typedef bool (*SymScan)(void *udata, Elf elf, Elf32_Word sym_type,
                         const char *name, Elf32_Sym *yhdr);
 
-/** Scans through a section's symbols
+/*! \brief Scans through a section's symbols
  *
- * The callback function provided (@see SymScan) gets called for each
+ * The callback function provided (\see SymScan) gets called for each
  * symbol in the given section.
  *
- * @note If the callback returns false the iteration will be stopped.
+ * \note If the callback returns false the iteration will be stopped.
  *
- * @param elf The Elf object;
- * @param callback The callback to be called;
- * @param udata User data for the callback.
- * @return false if the callback interrupted the scan operation or if the
+ * \param elf The Elf object;
+ * \param callback The callback to be called;
+ * \param udata User data for the callback.
+ * \return false if the callback interrupted the scan operation or if the
  *         ELF file doesn't have SHT_SYMTAB or SHT_DYNSYM sections, true
  *         if the scan has been completed.
  */
 bool elf_symbols_scan(Elf elf, SymScan callback, void *udata);
 
-/** Symbol getter
+/*! \brief Symbol getter
  *
  * Retrieves a symbol by searching the given name
  *
- * @param elf The Elf object;
- * @param symname The name of the symbol;
- * @return A pointer to the symbol header or NULL if there's no such
+ * \param elf The Elf object;
+ * \param symname The name of the symbol;
+ * \return A pointer to the symbol header or NULL if there's no such
  *         symbol.
  */
 
 Elf32_Sym *elf_symbol_get(Elf elf, const char *symname);
 
-/** Iteration function for program header's entry scanning
+/*@}*/
+
+/*! \addtogroup elfAccProgHead */
+/*@{*/
+
+/*! \brief Iteration function for program header's entry scanning
  *
- * @param udata User data;
- * @param elf The Elf object;
- * @param phdr The program header entry;
- * @return If false the iteration will be stopped.
+ * \param udata User data;
+ * \param elf The Elf object;
+ * \param phdr The program header entry;
+ * \return If false the iteration will be stopped.
  */
 typedef bool (*PHeaderScan)(void *udata, Elf elf, Elf32_Phdr *phdr);
 
-/** Scans through the program header array
+/*! \brief Scans through the program header array
  *
- * The callback function provided (@see PHeaderScan) gets called for each
+ * The callback function provided (\see PHeaderScan) gets called for each
  * entry in the program header
  *
- * @param elf The Elf object;
- * @param callback The callback to be called;
- * @param udata User data for the callback;
- * @return false if the callback interrupted the scan operation or if the
+ * \param elf The Elf object;
+ * \param callback The callback to be called;
+ * \param udata User data for the callback;
+ * \return false if the callback interrupted the scan operation or if the
  *         ELF file doesn't have a program header, true if the scan has
  *         been completed.
  */
 bool elf_progheader_scan(Elf elf, PHeaderScan callback, void *udata);
 
-/** Iteration function for dynamic section entry scanning
+/*@}*/
+
+/*! \addtogroup elfAccDynamic */
+/*@{*/
+
+/*! \brief Iteration function for dynamic section entry scanning
  *
- * @param udata User data;
- * @param elf The Elf object;
- * @param phdr The program header entry;
- * @return If false the iteration will be stopped.
+ * \param udata User data;
+ * \param elf The Elf object;
+ * \param phdr The program header entry;
+ * \return If false the iteration will be stopped.
  */
 typedef bool (*DynSectionScan) (void *udata, Elf elf, Elf32_Dyn *dyn);
 
-/** Scans through the dynamic section entry
+/*! \brief Scans through the dynamic section entry
  *
- * The callback function provided (@see DynSectionScan) gets called for
+ * The callback function provided (\see DynSectionScan) gets called for
  * each entry in the program header
  *
- * @param elf The Elf object;
- * @param callback The callback to be called;
- * @param udata User data for the callback;
- * @return false if the callback interrupted the scan operation or if the
+ * \param elf The Elf object;
+ * \param callback The callback to be called;
+ * \param udata User data for the callback;
+ * \return false if the callback interrupted the scan operation or if the
  *         ELF file doesn't have a program header, true if the scan has
  *         been completed.
  */
 bool elf_dynamic_scan(Elf elf, DynSectionScan callback, void *udata);
+
+/*@}*/
 
 #ifdef __cplusplus
 }
