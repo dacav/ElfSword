@@ -308,7 +308,7 @@ bool elf_progheader_scan(Elf elf, PHeaderScan callback, void *udata)
     return true;
 }
 
-struct track {
+struct sym_track {
     Elf32_Sym *ret;
     int oldmagic;
     const char *name;
@@ -317,10 +317,10 @@ struct track {
 static bool sym_scanner(void *udata, Elf elf, Elf32_Word type,
                         const char *name, Elf32_Sym *yhdr)
 {
-    struct track *t;
+    struct sym_track *t;
     ENTRY e, *ret;
 
-    t = (struct track *)udata;
+    t = (struct sym_track *)udata;
 
     /* sym_name may be null if the symbol has no name */
     if (name != NULL) {
@@ -345,7 +345,7 @@ Elf32_Sym *elf_symbol_get(Elf elf, const char *name)
 {
     struct hsearch_data *htab;
     ENTRY key, *entry;
-    struct track t;
+    struct sym_track t;
 
     t.oldmagic = elf->symtab_magic;
     if (t.oldmagic <= 0) {
@@ -369,6 +369,55 @@ Elf32_Sym *elf_symbol_get(Elf elf, const char *name)
                ? NULL
                : (Elf32_Sym *) entry->data;
     }
+}
+
+struct rel_track {
+    RelSectionScan callback;
+    void *udata;
+};
+
+static bool rel_scanner(void *udata, Elf elf, Elf32_Shdr *shdr)
+{
+    void *r_udata;
+    RelSectionScan r_callback;
+    size_t step, len;
+    union {
+        void *begin;
+        uint8_t *data8;
+    } sec;
+    struct RelocData reldata;
+
+    r_udata = ((struct rel_track *)udata)->udata;
+    r_callback = ((struct rel_track *)udata)->callback;
+
+    reldata.sh_type = shdr->sh_type;
+    switch (reldata.sh_type) {
+        case SHT_REL:
+            step = sizeof(Elf32_Rel);
+            break;
+        case SHT_RELA:
+            step = sizeof(Elf32_Rela);
+            break;
+        default:
+            return true;    /* Not a relocate section */
+    }
+
+    elf_section_content(elf, shdr, &sec.begin, &len);
+    while (len > 0) {
+        reldata.data._assign = sec.begin;
+        if (!r_callback(r_udata, elf, elf_section_name(elf, shdr),
+                        &reldata))
+            return false;
+        sec.data8 += step;
+        len -= step;
+    }
+    return true;
+}
+
+bool elf_relocation_scan(Elf elf, RelSectionScan callback, void *udata)
+{
+    struct rel_track t = {callback, udata};
+    return elf_sections_scan(elf, rel_scanner, (void *)&t);
 }
 
 static bool prog_header_scanner(void *udata, Elf elf, Elf32_Phdr *phdr)

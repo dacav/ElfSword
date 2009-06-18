@@ -23,27 +23,22 @@
 #include <stdio.h>
 #include <assert.h>
 
-bool scanner(void *udata, Elf e, Elf32_Word type,
-             const char *name, Elf32_Sym *sym)
+bool rel_scanner(void *udata, Elf elf, const char *sname,
+                 struct RelocData *rd)
 {
-    const char * tab;
-    switch (type) {
-        case SHT_SYMTAB:
-            tab = "symtab";
-            break;
-        case SHT_DYNSYM:
-            tab = "dynsym";
-            break;
-        default:
-            tab = "WTF!";
-    }
-    printf("Symbol type: %s (%d); name: %s\n", tab, type, name);
+    int n;
+
+    n = *((int *)udata);
+    printf("rel elem %02d: Section %s\n", n, sname);
+    *((int *)udata) = n + 1;
+
     return true;
 }
 
 int main(int argc, char **argv)
 {
     Elf elf;
+    int n = 0;
 
     assert(argc > 1);
     elf = elf_map_file(argv[1]);
@@ -51,7 +46,8 @@ int main(int argc, char **argv)
     printf("The ELF file is %swell formed\n",
            elf_check_format(elf) ? "" : "not ");
 
-    elf_symbols_scan(elf, scanner, NULL);
+    elf_relocation_scan(elf, rel_scanner, (void *)&n);
+
     elf_release_file(elf);
 
     return 0;

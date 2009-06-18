@@ -275,7 +275,7 @@ typedef struct {
 #define ELF32_ST_INFO(b,t)  (((b)<<4)+((t)&0xf))
 
 /*! \brief Elf32_Sym::st_info binding values */
-enum sym_st_info {
+enum sym_st_info_bindings {
     STB_LOCAL = 0,                      /*!< Locally scoped symbol */
     STB_GLOBAL = 1,                     /*!< Globally scoped symbol */
     STB_WEAK = 2,                       /*!< Globally scoped, lower */
@@ -287,7 +287,7 @@ enum sym_st_info {
 };
 
 /*! \brief Elf32_Sym::st_info type values */
-enum sym_st_info {
+enum sym_st_info_type {
     STT_NOTYPE = 0,                     /*!< Not specified */
     STT_OBJECT = 1,                     /*!< Data object */
     STT_FUNC = 2,                       /*!< Function or executable */
@@ -363,18 +363,54 @@ enum phdr_p_flags {
 /*! \addtogroup elfTypComposite */
 /*@{*/
 
-/*! \brief .rel.* sections content */
+/*! \brief .rel.* sections content.
+ *
+ * .rel.* sections are marked with the SHT_REL type and contain
+ * information on how to modify section contents.
+ */
 typedef struct {
-    Elf32_Addr r_offset;                /*!< */
-    Elf32_Word r_info;                  /*!< */
+    Elf32_Addr r_offset;                /*!< Offset of the unit affected
+                                         *   by relocation: offset from
+                                         *   the beginning of the section
+                                         *   for relocable files, virtual
+                                         *   address for executables and
+                                         *   dynamic linking libraries. */
+    Elf32_Word r_info;                  /*!< Information on symbol table
+                                         *   respect to relocation must be
+                                         *   made and type of relocation
+                                         *   to apply. \see ELF32_R_SYM,
+                                         *   ELF32_R_TYPE, ELF32_R_INFO */
 } Elf32_Rel;
 
-/*! \brief .rela.* sections content */
+/*! \brief .rela.* sections content.
+ *
+ * .rela.* sections are marked with the SHT_RELA type and contain
+ * information on how to modify section contents.
+ */
 typedef struct {
-    Elf32_Addr r_offset;                /*!< */
-    Elf32_Word r_info;                  /*!< */
-    Elf32_Sword r_addend;               /*!< */
+    Elf32_Addr r_offset;                /*!< Offset of the unit affected
+                                         *   by relocation: offset from
+                                         *   the beginning of the section
+                                         *   for relocable files, virtual
+                                         *   address for executables and
+                                         *   dynamic linking libraries. */
+    Elf32_Word r_info;                  /*!< Information on symbol table
+                                         *   respect to relocation must be
+                                         *   made and type of relocation
+                                         *   to apply. \see ELF32_R_SYM,
+                                         *   ELF32_R_TYPE, ELF32_R_INFO */
+    Elf32_Sword r_addend;               /*!< Addend to value of relocation
+                                         *   field */
 } Elf32_Rela;
+
+/*! \brief Macro for symbol table relocation extraction */
+#define ELF32_R_SYM(i)  ((i)>>8)
+
+/*! \brief Macro for type of relocation */
+#define ELF32_R_TYPE(i) ((unsigned char)(i))
+
+/*! \brief Macro for Elf32_Rel::r_info field construction */
+#define ELF32_R_INFO(s,t) (((s)<<8) + (unsigned char)(t))
 
 /*@}*/
 
@@ -398,7 +434,7 @@ typedef struct {
     union {
         Elf32_Word d_val;               /*!< Integer representation */
         Elf32_Addr d_ptr;               /*!< Pointer representation */
-    } d_un;
+    } d_un;                             /*!< Dynamic entry value */
 } Elf32_Dyn;
 
 /*@}*/
@@ -406,7 +442,7 @@ typedef struct {
 /* \addtogroup elfConstants */
 /*@{*/
 
-/* Elf32_Dyn::d_tag field values */
+/*! \brief Elf32_Dyn::d_tag field values */
 enum dyn_d_tag {
     DT_NULL = 0,                        /*!< End of dynamic array; Ignore
                                          *   d_un */

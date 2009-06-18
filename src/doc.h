@@ -18,5 +18,6 @@
 /*!     \defgroup elfAccSections Sections access */
 /*!     \defgroup elfAccSymbols Symbols access */
 /*!     \defgroup elfAccProgHead Program header access */
+/*!     \defgroup elfAccRel Relocation items access */
 /*!     \defgroup elfAccDynamic Dynamic tags access */
 /*@}*/

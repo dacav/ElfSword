@@ -20,7 +20,7 @@
 
 /*! \file elf.h
  *
- * This module allows to extract pieces of information from an ELF file
+ * This module allows to extract pieces of information from an ELF file.
  */
 #ifndef __ELF_H__
 #define __ELF_H__
@@ -36,12 +36,12 @@ extern "C" {
 /*! \addtogroup elfAccFile */
 /*@{*/
 
-/*! \brief ELF file representation type */
+/*! \brief ELF file representation type. */
 typedef struct elf_struct * Elf;
 
-/*! \brief ELF file mapper
+/*! \brief ELF file mapper.
  *
- * Produces an Elf object by mapping the given file in memory
+ * Produces an Elf object by mapping the given file in memory.
  *
  * \param filename The name of the ELF file to be mapped;
  * \return an Elf object or NULL on failure (i.e. invalid file).
@@ -50,21 +50,22 @@ Elf elf_map_file(const char *filename);
 
 /*! \brief ELF file releaser
  *
- * Frees the Elf object
+ * Frees the Elf object.
  *
  * \param elf The Elf object to be freed;
  * \return true on success, false on failure.
  */
 bool elf_release_file(Elf elf);
 
-/*! \brief Checks wether the ELF file is well formed
+/*! \brief Checks wether the ELF file is well formed.
  *
  * \param elf The Elf object;
  * \return true if the object is well formed, false otherwise.
  */
 bool elf_check_format(Elf elf);
 
-/*! \brief Returns a const pointer to the first byte of the ELF file mapping
+/*! \brief Returns a const pointer to the first byte of the ELF file
+ *         mapping.
  *
  * \param elf The ELF file;
  * \return a const pointer to the first byte.
@@ -79,7 +80,7 @@ const uint8_t * elf_get_content(Elf elf);
 /*! \brief Section getter
  *
  * Retrieves a section by searching the given name on the sections hash
- * table
+ * table.
  *
  * \param elf The Elf object;
  * \param secname The name of the section;
@@ -90,7 +91,7 @@ Elf32_Shdr * elf_section_get(Elf elf, const char *secname);
 
 /*! \brief Section name getter
  *
- * Retrieves the name of the given section from the ELF string table
+ * Retrieves the name of the given section from the ELF string table.
  *
  * \param elf The Elf object;
  * \param shdr The section header;
@@ -99,7 +100,7 @@ Elf32_Shdr * elf_section_get(Elf elf, const char *secname);
  */
 const char * elf_section_name(Elf elf, Elf32_Shdr *shdr);
 
-/*! \brief Section content retriever
+/*! \brief Section content retriever.
  *
  * Returns the position of the section's content and its length through
  * parameters side effect.
@@ -112,7 +113,7 @@ const char * elf_section_name(Elf elf, Elf32_Shdr *shdr);
 void elf_section_content(Elf elf, Elf32_Shdr *shdr, void **cont,
                          size_t *size);
 
-/*! \brief Iteration function for section scanning
+/*! \brief Iteration function for section scanning.
  *
  * \param udata User data;
  * \param elf The Elf object;
@@ -121,10 +122,10 @@ void elf_section_content(Elf elf, Elf32_Shdr *shdr, void **cont,
  */
 typedef bool (*SecScan)(void *udata, Elf elf, Elf32_Shdr *shdr);
 
-/*! \brief Scans through the sections
+/*! \brief Scans through the sections.
  *
  * The callback function provided (\see SecScan) gets called for each
- * section in the ELF file
+ * section in the ELF file.
  *
  * \note If the callback returns false the iteration will be stopped.
  *
@@ -141,7 +142,7 @@ bool elf_sections_scan(Elf elf, SecScan callback, void *udata);
 /*! \addtogroup elfAccSymbols */
 /*@{*/
 
-/*! \brief Iteration function for section's symbols scanning
+/*! \brief Iteration function for section's symbols scanning.
  *
  * \param udata User data;
  * \param elf The Elf object;
@@ -156,7 +157,7 @@ bool elf_sections_scan(Elf elf, SecScan callback, void *udata);
 typedef bool (*SymScan)(void *udata, Elf elf, Elf32_Word sym_type,
                         const char *name, Elf32_Sym *yhdr);
 
-/*! \brief Scans through a section's symbols
+/*! \brief Scans through a section's symbols.
  *
  * The callback function provided (\see SymScan) gets called for each
  * symbol in the given section.
@@ -172,7 +173,7 @@ typedef bool (*SymScan)(void *udata, Elf elf, Elf32_Word sym_type,
  */
 bool elf_symbols_scan(Elf elf, SymScan callback, void *udata);
 
-/*! \brief Symbol getter
+/*! \brief Symbol getter.
  *
  * Retrieves a symbol by searching the given name
  *
@@ -189,7 +190,7 @@ Elf32_Sym *elf_symbol_get(Elf elf, const char *symname);
 /*! \addtogroup elfAccProgHead */
 /*@{*/
 
-/*! \brief Iteration function for program header's entry scanning
+/*! \brief Iteration function for program header's entry scanning.
  *
  * \param udata User data;
  * \param elf The Elf object;
@@ -198,10 +199,10 @@ Elf32_Sym *elf_symbol_get(Elf elf, const char *symname);
  */
 typedef bool (*PHeaderScan)(void *udata, Elf elf, Elf32_Phdr *phdr);
 
-/*! \brief Scans through the program header array
+/*! \brief Scans through the program header array.
  *
  * The callback function provided (\see PHeaderScan) gets called for each
- * entry in the program header
+ * entry in the program header.
  *
  * \param elf The Elf object;
  * \param callback The callback to be called;
@@ -214,10 +215,57 @@ bool elf_progheader_scan(Elf elf, PHeaderScan callback, void *udata);
 
 /*@}*/
 
+/*! \addtogroup elfAccRel */
+/*@{*/
+
+/*! \brief Reference to relocation related data, used for relocation
+ *         section scanning.
+ *
+ * \see RelSectionScan, Elf32_Rel, Elf32_Rela
+ */
+struct RelocData {
+    Elf32_Word sh_type;     /*!< Type of the section containing the value,
+                             *   may contain SHT_REL or SHT_RELA */
+    union {
+        Elf32_Rel *rel;     /*!< To use if RelocData::sh_type is SHT_REL */
+        Elf32_Rela *rela;   /*!< To use if RelocData::sh_type is SHT_RELA */
+        void *_assign;
+    } data;                 /*!< Contained data */
+};
+
+/*! \brief Iteration function for relocation section entry scanning.
+ *
+ * \see RelocData
+ *
+ * \param udata User data;
+ * \param elf The Elf object;
+ * \param s_name The container section's name;
+ * \param rd The relocation entry;
+ * \return If false the iteration will be stopped.
+ */
+typedef bool (*RelSectionScan) (void *udata, Elf elf, const char *s_name,
+                                struct RelocData *rd);
+
+/*! \brief Scans through the dynamic section entry.
+ *
+ * The callback function provided (\see DynSectionScan) gets called for
+ * each entry of relocation sections.
+ *
+ * \param elf The Elf object;
+ * \param callback The callback to be called;
+ * \param udata User data for the callback;
+ * \return false if the callback interrupted the scan operation or if the
+ *         ELF file doesn't have a program header, true if the scan has
+ *         been completed.
+ */
+bool elf_relocation_scan(Elf elf, RelSectionScan callback, void *udata);
+
+/*@}*/
+
 /*! \addtogroup elfAccDynamic */
 /*@{*/
 
-/*! \brief Iteration function for dynamic section entry scanning
+/*! \brief Iteration function for dynamic section entry scanning.
  *
  * \param udata User data;
  * \param elf The Elf object;
@@ -226,10 +274,10 @@ bool elf_progheader_scan(Elf elf, PHeaderScan callback, void *udata);
  */
 typedef bool (*DynSectionScan) (void *udata, Elf elf, Elf32_Dyn *dyn);
 
-/*! \brief Scans through the dynamic section entry
+/*! \brief Scans through the dynamic section entry.
  *
  * The callback function provided (\see DynSectionScan) gets called for
- * each entry in the program header
+ * each entry in the program header.
  *
  * \param elf The Elf object;
  * \param callback The callback to be called;
