@@ -301,6 +301,8 @@ enum sym_st_info_type {
                                         /*   processor specific type */
 };
 
+/*@}*/
+
 /*! \addtogroup elfTypComposite */
 /*@{*/
 
