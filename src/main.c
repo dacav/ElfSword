@@ -27,9 +27,32 @@ bool rel_scanner(void *udata, Elf elf, const char *sname,
                  struct RelocData *rd)
 {
     int n;
+    int offset = ELF32_R_SYM(rd->data.rel->r_info);
+    Elf32_Shdr *symtab, *strtab;
+    union {
+        Elf32_Sym *ptrsym;
+        void *ptr;
+    } sym;
+    union {
+        const char *name;
+        void *ptr;
+    } str;
 
     n = *((int *)udata);
     printf("rel elem %02d: Section %s\n", n, sname);
+    printf("             Offset: %d\n", rd->data.rel->r_offset);
+    printf("             Symbol offset: %d\n", offset);
+
+    symtab = elf_section_get(elf, ".symtab");
+    elf_section_content(elf, symtab, &sym.ptr, NULL);
+    printf("             Symbol header address: %p\n", &sym.ptrsym[offset]);
+    printf("             Symbol value: %d\n", sym.ptrsym[offset].st_value);
+
+    strtab = elf_section_get(elf, ".strtab");
+    elf_section_content(elf, strtab, &str.ptr, NULL);
+    printf("             Symbol name: %s\n", str.name +
+            sym.ptrsym[offset].st_name);
+
     *((int *)udata) = n + 1;
 
     return true;
@@ -43,11 +66,7 @@ int main(int argc, char **argv)
     assert(argc > 1);
     elf = elf_map_file(argv[1]);
     assert(elf != NULL);
-    printf("The ELF file is %swell formed\n",
-           elf_check_format(elf) ? "" : "not ");
-
     elf_relocation_scan(elf, rel_scanner, (void *)&n);
-
     elf_release_file(elf);
 
     return 0;
