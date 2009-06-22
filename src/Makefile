@@ -2,7 +2,7 @@
 
 CFLAGS := -Wall -D_GNU_SOURCE
 OBJS := $(addsuffix .o, $(basename $(wildcard *.c)))
-APP := test
+APP := ElfSword
 
 all: $(OBJS)
 	$(CC) $(CFLAGS) $(OBJS) -o $(APP)
