@@ -77,7 +77,7 @@ const uint8_t * elf_get_content(Elf elf);
 /*! \addtogroup elfAccSections */
 /*@{*/
 
-/*! \brief Section getter
+/*! \brief Section getter by name.
  *
  * Retrieves a section by searching the given name on the sections hash
  * table.
@@ -88,6 +88,18 @@ const uint8_t * elf_get_content(Elf elf);
  *         section.
  */
 Elf32_Shdr * elf_section_get(Elf elf, const char *secname);
+
+/*! \brief Section getter by index.
+ *
+ * Retrieves a section by positioning on the given entry of the section
+ * header table.
+ *
+ * \param elf The Elf object;
+ * \param idx The required index;
+ * \return A pointer to the section header or NULL if there's no such
+ *         section.
+ */
+Elf32_Shdr * elf_section_seek(Elf elf, unsigned idx);
 
 /*! \brief Section name getter
  *
@@ -173,7 +185,7 @@ typedef bool (*SymScan)(void *udata, Elf elf, Elf32_Word sym_type,
  */
 bool elf_symbols_scan(Elf elf, SymScan callback, void *udata);
 
-/*! \brief Symbol getter.
+/*! \brief Symbol getter by name.
  *
  * Retrieves a symbol by searching the given name
  *
@@ -182,8 +194,19 @@ bool elf_symbols_scan(Elf elf, SymScan callback, void *udata);
  * \return A pointer to the symbol header or NULL if there's no such
  *         symbol.
  */
-
 Elf32_Sym *elf_symbol_get(Elf elf, const char *symname);
+
+/*! \brief Symbol getter by index.
+ *
+ * Retrieves a symbol by positioning on the given entry of the symbol
+ * header table.
+ *
+ * \param elf The Elf object;
+ * \param idx The required index;
+ * \return A pointer to the symbol header or NULL if there's no such
+ *         symbol.
+ */
+Elf32_Sym *elf_symbol_seek(Elf elf, Elf32_Word type, unsigned idx);
 
 /*! \brief Array structure used for hash table buckets. */
 typedef struct {

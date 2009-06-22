@@ -27,7 +27,6 @@
 #include <assert.h>
 #include <stdlib.h>
 #include <string.h>
-
 #include <search.h>
 
 #define SECTION_DYNAMIC ".dynamic"
@@ -287,6 +286,18 @@ Elf32_Shdr *elf_section_get(Elf elf, const char *secname)
            : (Elf32_Shdr *) entry->data;
 }
 
+Elf32_Shdr * elf_section_seek(Elf elf, unsigned idx)
+{
+    Elf32_Ehdr *header;
+
+    header = elf->file.header;
+    if (idx < header->e_shnum) {
+        return (Elf32_Shdr *)(elf->file.data8b + header->e_shoff) + idx;
+    } else {
+        return NULL;
+    }
+}
+
 /* --- SYMBOL MANAGEMENT ------------------------------------------------- */
 
 static const char *symbol_name(Elf elf, Elf32_Shdr *shdr,
@@ -331,7 +342,7 @@ static bool symbols_scan(Elf elf, Elf32_Shdr *shdr, SymScan callback,
 
 bool elf_symbols_scan(Elf elf, SymScan callback, void *udata)
 {
-    Elf32_Shdr *sec;;
+    Elf32_Shdr *sec;
 
     sec = elf_section_get(elf, SECTION_SYMTAB);
     if (sec != NULL)
@@ -401,6 +412,31 @@ Elf32_Sym *elf_symbol_get(Elf elf, const char *name)
         return hsearch_r(key, FIND, &entry, &elf->symtab) == 0
                ? NULL
                : (Elf32_Sym *) entry->data;
+    }
+}
+
+Elf32_Sym *elf_symbol_seek(Elf elf, Elf32_Word type, unsigned idx)
+{
+    Elf32_Shdr *sec;
+    size_t nentr;
+
+    switch (type) {
+        case SHT_SYMTAB:
+            sec = elf_section_get(elf, SECTION_SYMTAB);
+            break;
+        case SHT_DYNSYM:
+            sec = elf_section_get(elf, SECTION_DYNSYM);
+            break;
+        default:
+            return NULL;
+    }
+    if (sec == NULL)
+        return NULL;
+    nentr = sec->sh_size / sizeof(Elf32_Sym);
+    if (idx < nentr) {
+        return (Elf32_Sym *)(elf->file.data8b + sec->sh_offset) + idx;
+    } else {
+        return NULL;
     }
 }
 
