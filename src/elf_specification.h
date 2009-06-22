@@ -303,10 +303,25 @@ enum sym_st_info_type {
 
 /*@}*/
 
+/*! \addtogroup elfFunctions */
+/*@{*/
+
+/*! \brief ELF Hashing function.
+ *
+ * This function calculates the hash value of a symbol name, used on elf
+ * hash tables (.hash sections).
+ *
+ * \param name The name of the symbol;
+ * \return The calculated hash value.
+ */
+unsigned long elf_hash(const unsigned char *name);
+
+/*@}*/
+
 /*! \addtogroup elfTypComposite */
 /*@{*/
 
-/*! \brief Program header
+/*! \brief Program header.
  *
  * Program headers describe segments used to achieve loading and dynamic
  * linking of executables and dynamic libraries.
@@ -316,18 +331,20 @@ enum sym_st_info_type {
  * elements are stored into the main ELF header.
  */
 typedef struct {
-    Elf32_Word      p_type;             /*!< Type of segment */
+    Elf32_Word      p_type;             /*!< Type of segment. */
     Elf32_Off       p_offset;           /*!< Offset from the file's
                                          *   beginning of the first byte of
-                                         *   the segment */
+                                         *   the segment. */
     Elf32_Addr      p_vaddr;            /*!< Virtual address of the first
-                                         *   byte */
-    Elf32_Addr      p_paddr;            /*!< Reserved for phisical address */
-    Elf32_Word      p_filesz;           /*!< Size of the segment's file image */
+                                         *   byte. */
+    Elf32_Addr      p_paddr;            /*!< Reserved for phisical
+                                         *   address. */
+    Elf32_Word      p_filesz;           /*!< Size of the segment's file
+                                         *   image. */
     Elf32_Word      p_memsz;            /*!< Size of the segment's memory
-                                         *   image */
-    Elf32_Word      p_flags;            /*!< Segment flags */
-    Elf32_Word      p_align;            /*!< Segment alignment */
+                                         *   image. */
+    Elf32_Word      p_flags;            /*!< Segment flags. */
+    Elf32_Word      p_align;            /*!< Segment alignment. */
 } Elf32_Phdr;
 
 /*@}*/
@@ -335,23 +352,23 @@ typedef struct {
 /*! \addtogroup elfConstants */
 /*@{*/
 
-/*! \brief Elf32_Phdr::p_type field values */
+/*! \brief Elf32_Phdr::p_type field values. */
 enum phdr_p_type {
     PT_NULL = 0,                        /*!< Array element unused */
-    PT_LOAD = 1,                        /*!< Loadable segment */
+    PT_LOAD = 1,                        /*!< Loadable segment. */
     PT_DYNAMIC = 2,                     /*!< Element specifying dynamic
-                                         *   linking info */
+                                         *   linking info. */
     PT_INTERP = 3,                      /*!< Null terminated path of
-                                         *   interpreter */
+                                         *   interpreter. */
     PT_NOTE = 4,                        /*!< Auxiliary information */
-    PT_SHLIB = 5,                       /*!< Reserved */
+    PT_SHLIB = 5,                       /*!< Reserved. */
     PT_PHDR = 6,                        /*!< Location/size of the program
-                                         *   header itself */
-    PT_LOPROC = 0x70000000,             /*!< Processor specific reserved */
-    PT_HIPROC = 0x7fffffff              /*!< Processor specific reserved */
+                                         *   header itself. */
+    PT_LOPROC = 0x70000000,             /*!< Processor specific reserved. */
+    PT_HIPROC = 0x7fffffff              /*!< Processor specific reserved. */
 };
 
-/*! \brief Elf32_Phdr::p_flags field values */
+/*! \brief Elf32_Phdr::p_flags field values. */
 enum phdr_p_flags {
     PF_X = 0x01,                        /*!< Execute permission */
     PF_W = 0x02,                        /*!< Write permission */

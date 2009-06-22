@@ -33,6 +33,9 @@
 #define SECTION_DYNAMIC ".dynamic"
 #define SECTION_SYMTAB ".symtab"
 #define SECTION_DYNSYM ".dynsym"
+#define SECTION_HASH ".hash"
+
+/* --- ELF FILE ACCESS --------------------------------------------------- */
 
 /* Elf mapping type */
 struct elf_struct {
@@ -77,101 +80,7 @@ struct elf_struct {
      */
 };
 
-void elf_section_content (Elf elf, Elf32_Shdr *shdr,
-                          void **cont, size_t *size)
-{
-    if (cont != NULL)
-        *cont = (void *)(elf->file.data8b + shdr->sh_offset);
-    if (size != NULL)
-        *size = shdr->sh_size;
-}
-
-const char *elf_section_name(Elf elf, Elf32_Shdr *shdr)
-{
-    const Elf32_Shdr *names = elf->names;
-
-    if (names != NULL) {
-        return (const char *)elf->file.data + names->sh_offset +
-                             shdr->sh_name;
-    } else {
-        return NULL;
-    }
-}
-
-static const char *symbol_name(Elf elf, Elf32_Shdr *shdr,
-                               Elf32_Sym *yhdr)
-{
-    const Elf32_Ehdr *header = elf->file.header;
-
-    if (yhdr->st_name == 0)
-        return NULL;
-
-    /* shdr->sh_link contains the index of the associated string table.
-     * Moving on the correct table */
-    shdr = (Elf32_Shdr *) ((elf->file.data8b + header->e_shoff)
-                           + (header->e_sheentsize * shdr->sh_link));
-    return (const char *)elf->file.data + shdr->sh_offset + yhdr->st_name;
-}
-
-static bool symbols_scan(Elf elf, Elf32_Shdr *shdr, SymScan callback,
-                         void *udata)
-{
-    Elf32_Sym *cursor;
-    size_t nentr;
-    const char *name;
-
-    /* NOTE: the shdr->sh_type must be either SHT_SYMTAB or SHT_DYNSYM.
-     *       no checking is performed as this is an internal function
-     *       ...something like
-     * if (shdr->sh_type != SHT_SYMTAB && shdr->sh_type != SHT_DYNSYM)
-     *      error();
-     */
-
-    nentr = shdr->sh_size / sizeof(Elf32_Sym);
-    cursor = (Elf32_Sym *)(elf->file.data8b + shdr->sh_offset);
-    while (nentr --) {
-        name = symbol_name(elf, shdr, cursor);
-        if (!callback(udata, elf, shdr->sh_type, name, cursor))
-            return false;
-        cursor ++;
-    }
-    return true;
-}
-
-bool elf_symbols_scan(Elf elf, SymScan callback, void *udata)
-{
-    Elf32_Shdr *sec;;
-
-    sec = elf_section_get(elf, SECTION_SYMTAB);
-    if (sec != NULL)
-        if (!symbols_scan(elf, sec, callback, udata))
-            return false;
-    sec = elf_section_get(elf, SECTION_DYNSYM);
-    return symbols_scan(elf, sec, callback, udata);
-}
-
-bool elf_sections_scan(Elf elf, SecScan callback, void *udata)
-{
-    Elf32_Ehdr *header;
-    Elf32_Shdr *cursor;
-    uint32_t sec_count;
-    size_t sec_size;
-
-    header = elf->file.header;
-    cursor = (Elf32_Shdr *)(elf->file.data8b + header->e_shoff);
-    sec_count = header->e_shnum;
-    sec_size = header->e_sheentsize;
-
-    while (sec_count --) {
-        if (!callback(udata, elf, cursor))
-            return false;
-        cursor = (Elf32_Shdr *)((uint8_t *)cursor + sec_size);
-    }
-    return true;
-}
-
-static
-bool check_magic(Elf elf)
+static bool check_magic(Elf elf)
 {
     unsigned char *magic;
 
@@ -199,8 +108,7 @@ bool elf_release_file(Elf elf)
     }
 }
 
-static
-bool hash_builder(void *udata, Elf elf, Elf32_Shdr *shdr)
+static bool hash_builder(void *udata, Elf elf, Elf32_Shdr *shdr)
 {
     struct hsearch_data *sectab;
     ENTRY e, *ret;
@@ -275,6 +183,97 @@ const uint8_t * elf_get_content(Elf elf)
     return elf->file.data8b;
 }
 
+static bool prog_header_scanner(void *udata, Elf elf, Elf32_Phdr *phdr)
+{
+    Elf32_Shdr *sec;
+    bool check;
+
+    if (phdr->p_type == PT_DYNAMIC) {
+        sec = elf_section_get(elf, SECTION_DYNAMIC);
+        check = (sec->sh_offset == phdr->p_offset) &&
+                (sec->sh_size == phdr->p_filesz);
+        *((bool *)udata) = check;
+        /* Since we found the segment we return false: this will honor the
+         * check, since the scan has been interrupted */
+        return false;
+    } else {
+        /* By returning true we continue scanning: if the last segment
+         * scan still returns true then we don't have any PT_DYNAMIC
+         * segment */
+        return true;
+    }
+}
+
+bool elf_check_format(Elf elf)
+{
+    bool check;
+    Elf32_Shdr *sec;
+    size_t len;
+
+    /* Checking corrispondence between .dynamic section and PT_DYNAMIC
+     * segment. This is achieved by scanning the segment array; if there's
+     * no such segment the check is void. */
+    if (elf_progheader_scan(elf, prog_header_scanner, (void *)&check) &&
+        !check)
+        return false;
+
+    /* Checking the correct size of the .dynamic section: it must contain
+     * a certain number of Elf32_Dyn structures */
+    sec = elf_section_get(elf, SECTION_DYNAMIC);
+    if (sec != NULL) {
+        elf_section_content(elf, sec, NULL, &len);
+        if (len % sizeof(Elf32_Dyn) > 0)
+            return false;
+    }
+ 
+    /* TODO add here further checks */
+
+    return true;
+}
+
+/* --- SECTIONS MANAGEMENT ----------------------------------------------- */
+
+void elf_section_content (Elf elf, Elf32_Shdr *shdr,
+                          void **cont, size_t *size)
+{
+    if (cont != NULL)
+        *cont = (void *)(elf->file.data8b + shdr->sh_offset);
+    if (size != NULL)
+        *size = shdr->sh_size;
+}
+
+const char *elf_section_name(Elf elf, Elf32_Shdr *shdr)
+{
+    const Elf32_Shdr *names = elf->names;
+
+    if (names != NULL) {
+        return (const char *)elf->file.data + names->sh_offset +
+                             shdr->sh_name;
+    } else {
+        return NULL;
+    }
+}
+
+bool elf_sections_scan(Elf elf, SecScan callback, void *udata)
+{
+    Elf32_Ehdr *header;
+    Elf32_Shdr *cursor;
+    uint32_t sec_count;
+    size_t sec_size;
+
+    header = elf->file.header;
+    cursor = (Elf32_Shdr *)(elf->file.data8b + header->e_shoff);
+    sec_count = header->e_shnum;
+    sec_size = header->e_sheentsize;
+
+    while (sec_count --) {
+        if (!callback(udata, elf, cursor))
+            return false;
+        cursor = (Elf32_Shdr *)((uint8_t *)cursor + sec_size);
+    }
+    return true;
+}
+
 Elf32_Shdr *elf_section_get(Elf elf, const char *secname)
 {
     ENTRY key = {
@@ -288,24 +287,58 @@ Elf32_Shdr *elf_section_get(Elf elf, const char *secname)
            : (Elf32_Shdr *) entry->data;
 }
 
-bool elf_progheader_scan(Elf elf, PHeaderScan callback, void *udata)
-{
-    size_t nents, size;
-    Elf32_Ehdr *header;
-    Elf32_Phdr *cursor;
+/* --- SYMBOL MANAGEMENT ------------------------------------------------- */
 
-    header = elf->file.header;
-    nents = header->e_phnum;
-    if (nents == 0)
-        return false;
-    size = header->e_phentsize;
-    cursor = (Elf32_Phdr *)(elf->file.data8b + header->e_phoff);
-    while (nents--) {
-        if (!callback(udata, elf, cursor))
+static const char *symbol_name(Elf elf, Elf32_Shdr *shdr,
+                               Elf32_Sym *yhdr)
+{
+    const Elf32_Ehdr *header = elf->file.header;
+
+    if (yhdr->st_name == 0)
+        return NULL;
+
+    /* shdr->sh_link contains the index of the associated string table.
+     * Moving on the correct table */
+    shdr = (Elf32_Shdr *) ((elf->file.data8b + header->e_shoff)
+                           + (header->e_sheentsize * shdr->sh_link));
+    return (const char *)elf->file.data + shdr->sh_offset + yhdr->st_name;
+}
+
+static bool symbols_scan(Elf elf, Elf32_Shdr *shdr, SymScan callback,
+                         void *udata)
+{
+    Elf32_Sym *cursor;
+    size_t nentr;
+    const char *name;
+
+    /* NOTE: the shdr->sh_type must be either SHT_SYMTAB or SHT_DYNSYM.
+     *       no checking is performed as this is an internal function
+     *       ...something like
+     * if (shdr->sh_type != SHT_SYMTAB && shdr->sh_type != SHT_DYNSYM)
+     *      error();
+     */
+
+    nentr = shdr->sh_size / sizeof(Elf32_Sym);
+    cursor = (Elf32_Sym *)(elf->file.data8b + shdr->sh_offset);
+    while (nentr --) {
+        name = symbol_name(elf, shdr, cursor);
+        if (!callback(udata, elf, shdr->sh_type, name, cursor))
             return false;
-        cursor = (Elf32_Phdr *)((uint8_t *)cursor + size);
+        cursor ++;
     }
     return true;
+}
+
+bool elf_symbols_scan(Elf elf, SymScan callback, void *udata)
+{
+    Elf32_Shdr *sec;;
+
+    sec = elf_section_get(elf, SECTION_SYMTAB);
+    if (sec != NULL)
+        if (!symbols_scan(elf, sec, callback, udata))
+            return false;
+    sec = elf_section_get(elf, SECTION_DYNSYM);
+    return symbols_scan(elf, sec, callback, udata);
 }
 
 struct sym_track {
@@ -371,6 +404,51 @@ Elf32_Sym *elf_symbol_get(Elf elf, const char *name)
     }
 }
 
+bool elf_symbols_hash(Elf elf, ElfHash *h)
+{
+    Elf32_Shdr *hash;
+    union {
+        Elf32_Word *ptr32;
+        void *ptr;
+    } data;
+    Elf32_Word addend;
+
+    hash = elf_section_get(elf, SECTION_HASH);
+    if (hash == NULL) {
+        return false;
+    }
+    elf_section_content(elf, hash, &data.ptr, NULL);
+    addend = h->bucket.length = *data.ptr32++;
+    h->chain.length = *data.ptr32++;
+    h->bucket.array = data.ptr32;
+    h->chain.array = data.ptr32 + addend;
+    return true;
+}
+
+/* --- PROGRAM HEADER MANAGEMENT ----------------------------------------- */
+
+bool elf_progheader_scan(Elf elf, PHeaderScan callback, void *udata)
+{
+    size_t nents, size;
+    Elf32_Ehdr *header;
+    Elf32_Phdr *cursor;
+
+    header = elf->file.header;
+    nents = header->e_phnum;
+    if (nents == 0)
+        return false;
+    size = header->e_phentsize;
+    cursor = (Elf32_Phdr *)(elf->file.data8b + header->e_phoff);
+    while (nents--) {
+        if (!callback(udata, elf, cursor))
+            return false;
+        cursor = (Elf32_Phdr *)((uint8_t *)cursor + size);
+    }
+    return true;
+}
+
+/* --- STATIC RELOCATION ENTRIES MANAGEMENT ------------------------------ */
+
 struct rel_track {
     RelSectionScan callback;
     void *udata;
@@ -420,53 +498,7 @@ bool elf_relocation_scan(Elf elf, RelSectionScan callback, void *udata)
     return elf_sections_scan(elf, rel_scanner, (void *)&t);
 }
 
-static bool prog_header_scanner(void *udata, Elf elf, Elf32_Phdr *phdr)
-{
-    Elf32_Shdr *sec;
-    bool check;
-
-    if (phdr->p_type == PT_DYNAMIC) {
-        sec = elf_section_get(elf, SECTION_DYNAMIC);
-        check = (sec->sh_offset == phdr->p_offset) &&
-                (sec->sh_size == phdr->p_filesz);
-        *((bool *)udata) = check;
-        /* Since we found the segment we return false: this will honor the
-         * check, since the scan has been interrupted */
-        return false;
-    } else {
-        /* By returning true we continue scanning: if the last segment
-         * scan still returns true then we don't have any PT_DYNAMIC
-         * segment */
-        return true;
-    }
-}
-
-bool elf_check_format(Elf elf)
-{
-    bool check;
-    Elf32_Shdr *sec;
-    size_t len;
-
-    /* Checking corrispondence between .dynamic section and PT_DYNAMIC
-     * segment. This is achieved by scanning the segment array; if there's
-     * no such segment the check is void. */
-    if (elf_progheader_scan(elf, prog_header_scanner, (void *)&check) &&
-        !check)
-        return false;
-
-    /* Checking the correct size of the .dynamic section: it must contain
-     * a certain number of Elf32_Dyn structures */
-    sec = elf_section_get(elf, SECTION_DYNAMIC);
-    if (sec != NULL) {
-        elf_section_content(elf, sec, NULL, &len);
-        if (len % sizeof(Elf32_Dyn) > 0)
-            return false;
-    }
- 
-    /* TODO add here further checks */
-
-    return true;
-}
+/* --- DYNAMIC RELOCATION ENTRIES MANAGEMENT ----------------------------- */
 
 bool elf_dynamic_scan(Elf elf, DynSectionScan callback, void *udata)
 {
@@ -486,3 +518,4 @@ bool elf_dynamic_scan(Elf elf, DynSectionScan callback, void *udata)
     }
     return true;
 }
+

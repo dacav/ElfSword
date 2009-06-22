@@ -10,6 +10,7 @@
 /*@{*/
 /*!         \defgroup elfConstants ELF standard field values */
 /*@}*/
+/*!     \defgroup elfFunctions ELF standard functions */
 /*@}*/
 
 /*! \defgroup elfAccess ELF internal data retrieving functions */

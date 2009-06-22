@@ -185,6 +185,25 @@ bool elf_symbols_scan(Elf elf, SymScan callback, void *udata);
 
 Elf32_Sym *elf_symbol_get(Elf elf, const char *symname);
 
+/*! \brief Array structure used for hash table buckets. */
+typedef struct {
+    Elf32_Word *array;  /*!< Pointer to the first element of the array. */
+    size_t length;      /*!< Length of the array. */
+} ElfArray;
+
+/*! \breif Elf Hash table. */
+typedef struct {
+    ElfArray bucket;    /*!< Bucket of indexes. */
+    ElfArray chain;     /*!< Chain of alternative indexes. */
+} ElfHash;
+
+/*! \brief Retrieves the hash table of the ELF file.
+ *
+ * \param elf The ELF object;
+ * \param h A pointer to the ElfHash element to fill.
+ */
+bool elf_symbols_hash(Elf elf, ElfHash *h);
+
 /*@}*/
 
 /*! \addtogroup elfAccProgHead */
