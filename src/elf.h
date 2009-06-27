@@ -169,6 +169,18 @@ bool elf_sections_scan(Elf elf, SecScan callback, void *udata);
 typedef bool (*SymScan)(void *udata, Elf elf, Elf32_Word sym_type,
                         const char *name, Elf32_Sym *yhdr);
 
+
+/*! \brief Symbol name retreiver
+ *
+ * \param elf The ELF object;
+ * \param shdr The header of the section containing the symbol;
+ * \param yhdr The header of the symbol to be searched.
+ * \return A pointer to a string containing the name. NULL if the symbol
+ *         doesn't have a name or the given shdr is neither a symtab nor a
+ *         dynsym.
+ */
+const char *elf_symbol_name(Elf elf, Elf32_Shdr *shdr, Elf32_Sym *yhdr);
+
 /*! \brief Scans through a section's symbols.
  *
  * The callback function provided (\see SymScan) gets called for each
@@ -203,6 +215,8 @@ Elf32_Sym *elf_symbol_get(Elf elf, const char *symname);
  *
  * \param elf The Elf object;
  * \param idx The required index;
+ * \param type It may be SHT_SYMTAB or SHT_DYNSYM depending on the symbol
+ *             belonging section.
  * \return A pointer to the symbol header or NULL if there's no such
  *         symbol.
  */
@@ -214,7 +228,7 @@ typedef struct {
     size_t length;      /*!< Length of the array. */
 } ElfArray;
 
-/*! \breif Elf Hash table. */
+/*! \brief Elf Hash table. */
 typedef struct {
     ElfArray bucket;    /*!< Bucket of indexes. */
     ElfArray chain;     /*!< Chain of alternative indexes. */
@@ -282,11 +296,14 @@ struct RelocData {
  * \param udata User data;
  * \param elf The Elf object;
  * \param s_name The container section's name;
- * \param rd The relocation entry;
+ * \param rd A structure containing pointers for the relocation entry;
+ * \param symtab The associated symbol table;
+ * \param toapply The section to which the relocation applies;
  * \return If false the iteration will be stopped.
  */
 typedef bool (*RelSectionScan) (void *udata, Elf elf, const char *s_name,
-                                struct RelocData *rd);
+                                struct RelocData *rd, Elf32_Shdr *symtab,
+                                Elf32_Shdr *toapply);
 
 /*! \brief Scans through the dynamic section entry.
  *

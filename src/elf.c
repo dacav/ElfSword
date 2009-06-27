@@ -300,12 +300,15 @@ Elf32_Shdr * elf_section_seek(Elf elf, unsigned idx)
 
 /* --- SYMBOL MANAGEMENT ------------------------------------------------- */
 
-static const char *symbol_name(Elf elf, Elf32_Shdr *shdr,
-                               Elf32_Sym *yhdr)
+const char *elf_symbol_name(Elf elf, Elf32_Shdr *shdr, Elf32_Sym *yhdr)
 {
     const Elf32_Ehdr *header = elf->file.header;
+    Elf32_Word sh_type;
 
     if (yhdr->st_name == 0)
+        return NULL;
+
+    if ((sh_type = shdr->sh_type) != SHT_SYMTAB && sh_type != SHT_DYNSYM)
         return NULL;
 
     /* shdr->sh_link contains the index of the associated string table.
@@ -332,7 +335,7 @@ static bool symbols_scan(Elf elf, Elf32_Shdr *shdr, SymScan callback,
     nentr = shdr->sh_size / sizeof(Elf32_Sym);
     cursor = (Elf32_Sym *)(elf->file.data8b + shdr->sh_offset);
     while (nentr --) {
-        name = symbol_name(elf, shdr, cursor);
+        name = elf_symbol_name(elf, shdr, cursor);
         if (!callback(udata, elf, shdr->sh_type, name, cursor))
             return false;
         cursor ++;
@@ -500,12 +503,9 @@ static bool rel_scanner(void *udata, Elf elf, Elf32_Shdr *shdr)
         uint8_t *data8;
     } sec;
     struct RelocData reldata;
+    Elf32_Shdr *symtab, *toapply;
 
-    r_udata = ((struct rel_track *)udata)->udata;
-    r_callback = ((struct rel_track *)udata)->callback;
-
-    reldata.sh_type = shdr->sh_type;
-    switch (reldata.sh_type) {
+    switch (reldata.sh_type = shdr->sh_type) {
         case SHT_REL:
             step = sizeof(Elf32_Rel);
             break;
@@ -516,11 +516,16 @@ static bool rel_scanner(void *udata, Elf elf, Elf32_Shdr *shdr)
             return true;    /* Not a relocate section */
     }
 
+    r_udata = ((struct rel_track *)udata)->udata;
+    r_callback = ((struct rel_track *)udata)->callback;
+
     elf_section_content(elf, shdr, &sec.begin, &len);
+    symtab = elf_section_seek(elf, shdr->sh_link);
+    toapply = elf_section_seek(elf, shdr->sh_info);
     while (len > 0) {
         reldata.data._assign = sec.begin;
         if (!r_callback(r_udata, elf, elf_section_name(elf, shdr),
-                        &reldata))
+                        &reldata, symtab, toapply))
             return false;
         sec.data8 += step;
         len -= step;
