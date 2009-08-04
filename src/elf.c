@@ -300,7 +300,7 @@ Elf32_Shdr * elf_section_seek(Elf elf, unsigned idx)
 
 /* --- SYMBOL MANAGEMENT ------------------------------------------------- */
 
-const char *elf_symbol_name(Elf elf, Elf32_Shdr *shdr, Elf32_Sym *yhdr)
+const char *elf_symbol_name(Elf elf, const Elf32_Shdr *shdr, Elf32_Sym *yhdr)
 {
     const Elf32_Ehdr *header = elf->file.header;
     Elf32_Word sh_type;

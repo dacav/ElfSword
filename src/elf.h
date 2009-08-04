@@ -179,7 +179,7 @@ typedef bool (*SymScan)(void *udata, Elf elf, Elf32_Word sym_type,
  *         doesn't have a name or the given shdr is neither a symtab nor a
  *         dynsym.
  */
-const char *elf_symbol_name(Elf elf, Elf32_Shdr *shdr, Elf32_Sym *yhdr);
+const char *elf_symbol_name(Elf elf, const Elf32_Shdr *shdr, Elf32_Sym *yhdr);
 
 /*! \brief Scans through a section's symbols.
  *
@@ -237,7 +237,8 @@ typedef struct {
 /*! \brief Retrieves the hash table of the ELF file.
  *
  * \param elf The ELF object;
- * \param h A pointer to the ElfHash element to fill.
+ * \param h A pointer to the ElfHash element to fill;
+ * \return true If the elf file has a hash table, false otherwise.
  */
 bool elf_symbols_hash(Elf elf, ElfHash *h);
 
