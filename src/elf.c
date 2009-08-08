@@ -352,6 +352,8 @@ bool elf_symbols_scan(Elf elf, SymScan callback, void *udata)
         if (!symbols_scan(elf, sec, callback, udata))
             return false;
     sec = elf_section_get(elf, SECTION_DYNSYM);
+    if (sec == NULL)
+        return false;
     return symbols_scan(elf, sec, callback, udata);
 }
 
