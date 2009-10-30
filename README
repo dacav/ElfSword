@@ -1,1 +1,5 @@
-ELF Reading library
+This project aims to produce a library suited for analysis (and maybe
+someday modification) of ELF binary files.
+
+Yes, actually there are many libraries around that are already doing this,
+but this is for me a good way of learning new stuff.

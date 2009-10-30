@@ -17,7 +17,7 @@
  * along with ElfSword.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
-/*! \file elf_specification.h
+/*! \file elf_spec.h
  *
  * This file specifies data structures representing the internal of an ELF
  * binary file. For further information please refer to ELF documentation

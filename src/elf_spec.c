@@ -1,4 +1,4 @@
-#include "elf_specification.h"
+#include <elf_spec.h>
 
 unsigned long elf_hash(const unsigned char *name)
 {

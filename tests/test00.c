@@ -17,8 +17,8 @@
  * along with ElfSword.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
-#include "elf_specification.h"
-#include "elf.h"
+#include <elf_spec.h>
+#include <elf.h>
 
 #include <stdio.h>
 #include <assert.h>
@@ -57,12 +57,11 @@ int main(int argc, char **argv)
     Elf elf;
     int n = 0;
 
-    assert(argc > 1);
-    elf = elf_map_file(argv[1]);
+    elf = elf_map_file(argv[0]);
     assert(elf != NULL);
     elf_relocation_scan(elf, rel_scanner, (void *)&n);
     elf_release_file(elf);
 
-    return 0;
+    exit(0);
 }
 

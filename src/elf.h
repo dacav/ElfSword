@@ -31,7 +31,7 @@ extern "C" {
 
 #include <stdbool.h>
 #include <stdlib.h>
-#include "elf_specification.h"
+#include <elf_spec.h>
 
 /*! \addtogroup elfAccFile */
 /*@{*/

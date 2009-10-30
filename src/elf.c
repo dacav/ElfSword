@@ -17,7 +17,7 @@
  * along with ElfSword.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
-#include "elf.h"
+#include <elf.h>
 
 #include <sys/types.h>
 #include <sys/stat.h>
