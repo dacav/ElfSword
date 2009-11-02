@@ -1,3 +1,3 @@
 EXTRA_DIST = reconf
-SUBDIRS = src tests
+SUBDIRS = libsimple libelfsword
 
