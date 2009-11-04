@@ -4,6 +4,9 @@
 #include <assert.h>
 #include <stdlib.h>
 
+// For debug purpose
+#include <stdio.h>
+
 struct elem {
     void *key;
     void *value;
@@ -71,6 +74,7 @@ void hash_free(hash_t htab)
             free(tmp);
         }
     }
+    free(htab);
 }
 
 static inline
@@ -83,15 +87,23 @@ struct bucket * get_bucket(hash_t htab, const void *key)
 void hash_insert(hash_t htab, const void *key, const void *value)
 {
     struct bucket *bkt = get_bucket(htab, key);
-    struct elem *new_entry;
+    cmp_func_t compare = htab->cmp_func;
+    struct elem *cursor;
 
-    assert(new_entry = malloc(sizeof(struct elem)));
-    new_entry->next = bkt->first;
-    bkt->first = new_entry;
+    cursor = bkt->first;
+    while (cursor) {
+        if (compare(cursor->key, key) == 0) {
+            cursor->value = (void *)value;
+            return;
+        }
+        cursor = cursor->next;
+    }
+    assert(cursor = malloc(sizeof(struct elem)));
+    cursor->next = bkt->first;
+    bkt->first = cursor;
     bkt->nelem ++;
-
-    new_entry->key = (void *)key;
-    new_entry->value = (void *)value;
+    cursor->key = (void *)key;
+    cursor->value = (void *)value;
 }
 
 void *hash_search(hash_t htab, const void *key)
