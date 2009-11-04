@@ -22,8 +22,8 @@
  *
  * This module allows to extract pieces of information from an ELF file.
  */
-#ifndef __ELF_H__
-#define __ELF_H__
+#ifndef __defined_elfsword_elf_h
+#define __defined_elfsword_elf_h
 
 #ifdef __cplusplus
 extern "C" {
@@ -354,4 +354,4 @@ bool elf_dynamic_scan(Elf elf, DynSectionScan callback, void *udata);
 }
 #endif
 
-#endif /* __ELF_H__ */
+#endif /* __defined_elfsword_elf_h */

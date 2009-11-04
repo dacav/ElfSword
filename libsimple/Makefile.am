@@ -1,8 +1,13 @@
-INCLUDES = -I./ -I$(top_srcdir)/includes/
+INCLUDES = -I./simple/ -I./ -I$(top_srcdir)/includes/
+DIST_SUBDIRS = simple 
 lib_LIBRARIES = libsimple.a
 
-include_HEADERS = simplehash.h
-libsimple_a_SOURCES = simplehash.h simplehash.c
+includesimpledir = $(prefix)/include/simple
+include_HEADERS = simple.h
+includesimple_HEADERS = simple/simplehash.h simple/simpletypes.h
+libsimple_a_SOURCES = $(include_HEADERS) \
+                      $(includetreedir_HEADERS) \
+                      simplehash.c 
 
 check_PROGRAMS = test00
 

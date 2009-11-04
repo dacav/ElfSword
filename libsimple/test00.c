@@ -1,4 +1,4 @@
-#include <simplehash.h>
+#include <simple.h>
 
 #include <assert.h>
 #include <stdlib.h>

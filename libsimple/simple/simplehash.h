@@ -1,5 +1,5 @@
-#ifndef __SIMPLE_HASH_H__
-#define __SIMPLE_HASH_H__
+#ifndef __defined_simple_hash_h
+#define __defined_simple_hash_h
 
 #include <simple.h>
 
@@ -13,4 +13,4 @@ void hash_free(hash_t htab);
 void hash_insert(hash_t htab, const void *key, const void *value);
 void *hash_search(hash_t htab, const void *key);
 
-#endif /* __SIMPLE_HASH_H__ */
+#endif // __defined_simple_hash_h

@@ -23,8 +23,8 @@
  * binary file. For further information please refer to ELF documentation
  */
 
-#ifndef __ELF_SPECIFICATION_H__
-#define __ELF_SPECIFICATION_H__
+#ifndef __defined_elfsword_elf_spec_h
+#define __defined_elfsword_elf_spec_h
 
 #ifdef __cplusplus
 extern "C" {
@@ -530,4 +530,4 @@ enum dyn_d_tag {
 }
 #endif
 
-#endif /* __ELF_SPECIFICATION_H__ */
+#endif /* __defined_elfsword_elf_spec_h */

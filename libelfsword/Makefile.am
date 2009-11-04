@@ -1,12 +1,16 @@
-INCLUDES = -I./ -I$(top_srcdir)/includes/
+INCLUDES = -I./elfsword/ -I./ -I$(top_srcdir)/includes/
 AM_CFLAGS = -D_GNU_SOURCE
 
 # Produced library:
 lib_LIBRARIES = libelfsword.a
 
 # Public headers to be installed in the $PREFIX/include directory:
-include_HEADERS = elf.h elf_spec.h
-libelfsword_a_SOURCES = elf.c elf_spec.c elf.h elf_spec.h doc.h
+includeelfsworddir = $(prefix)/include/elfsword
+includeelfsword_HEADERS = elfsword/elf.h elfsword/elf_spec.h
+include_HEADERS = elfsword.h
+libelfsword_a_SOURCES = $(include_HEADERS) \
+                        $(includetree_HEADERS) \
+                        elf.c elf_spec.c
 
 # Include files from src
 #check_PROGRAMS = test00

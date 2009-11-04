@@ -1,4 +1,4 @@
-#include <elf_spec.h>
+#include <elfsword.h>
 
 unsigned long elf_hash(const unsigned char *name)
 {
