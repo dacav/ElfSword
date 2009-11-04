@@ -9,10 +9,14 @@ libsimple_a_SOURCES = $(include_HEADERS) \
                       $(includetreedir_HEADERS) \
                       simplehash.c 
 
-check_PROGRAMS = test00
+check_PROGRAMS = test00 test01
 
 TESTS = $(check_PROGRAMS)
 
 test00_SOURCES = test00.c
 test00_LDFLAGS = -L./
 test00_LDADD   = -lsimple
+
+test01_SOURCES = test01.c
+test01_LDFLAGS = -L./
+test01_LDADD   = -lsimple
