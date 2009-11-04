@@ -1,1 +1,19 @@
-*.cbp
+# Garbage from auto-tools
+
+INSTALL
+.*.swp
+Makefile.in
+Makefile
+install-sh
+aclocal.m4
+autom4te.cache
+configure
+config.h
+config.h.in
+config.log
+config.status
+depcomp
+stamp-h1
+missing
+.deps
+
