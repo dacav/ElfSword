@@ -22,16 +22,16 @@ static int cmp(const void *v0, const void *v1)
 
 int main(int argc, char **argv)
 {
-    hash_t ht;
+    shash_t ht;
     int result;
 
-    assert(ht = hash_new(hash, 1, cmp, NULL, NULL));
-    hash_insert(ht, (const void *)"Hello", (const void *)100);
-    hash_insert(ht, (const void *)"Hi there", (const void *)200);
-    assert(hash_search(ht, (void *)"Hello", (void **)&result)
+    assert(ht = shash_new(hash, 1, cmp, NULL, NULL));
+    shash_insert(ht, (const void *)"Hello", (const void *)100);
+    shash_insert(ht, (const void *)"Hi there", (const void *)200);
+    assert(shash_search(ht, (void *)"Hello", (void **)&result)
            == SHASH_FOUND);
     assert(result == 100);
-    hash_free(ht);
+    shash_free(ht);
 
     exit(0);
 }

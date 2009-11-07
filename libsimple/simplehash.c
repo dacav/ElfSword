@@ -19,32 +19,32 @@ struct bucket {
     struct elem *first;
 };
 
-struct hash {
+struct shash {
     unsigned nbuckets;
     struct bucket *buckets;    
-    hash_func_t hash_func;          // key hashing function
-    cmp_func_t cmp_func;            // key comparing function
-    free_mem_t val_free;            // object freeing function
-    free_mem_t key_free;            // keys freeing function
+    shash_func_t shash_func;          // key hashing function
+    scmp_func_t cmp_func;            // key comparing function
+    sfree_mem_t val_free;            // object freeing function
+    sfree_mem_t key_free;            // keys freeing function
 };
 
-hash_t hash_new(hash_func_t hf, unsigned nbuckets, cmp_func_t cp,
-                free_mem_t key_free, free_mem_t val_free)
+shash_t shash_new(shash_func_t hf, unsigned nbuckets, scmp_func_t cp,
+                 sfree_mem_t key_free, sfree_mem_t val_free)
 {
     size_t total;
     void *chunk;
-    hash_t table;
+    shash_t table;
     void *bks;
 
     if (nbuckets == 0)
         return NULL;
    
-    total = sizeof(struct hash) + nbuckets * sizeof(struct bucket);
+    total = sizeof(struct shash) + nbuckets * sizeof(struct bucket);
     assert(chunk = malloc(total));
-    table = (hash_t) chunk;
+    table = (shash_t) chunk;
     table->buckets = bks = (struct bucket *)
-                           (((char *)chunk) + sizeof(struct hash));
-    table->hash_func = hf;
+                           (((char *)chunk) + sizeof(struct shash));
+    table->shash_func = hf;
     table->cmp_func = cp;
     table->val_free = val_free;
     table->key_free = key_free;
@@ -54,12 +54,12 @@ hash_t hash_new(hash_func_t hf, unsigned nbuckets, cmp_func_t cp,
 	return table;
 }
 
-void hash_free(hash_t htab)
+void shash_free(shash_t htab)
 {
     int i;
     struct elem *cur, *tmp;
     struct bucket *bks = htab->buckets;
-    free_mem_t val_free = htab->val_free,
+    sfree_mem_t val_free = htab->val_free,
                key_free = htab->key_free;
 
     for (i = 0; i < htab->nbuckets; i ++) {
@@ -78,16 +78,16 @@ void hash_free(hash_t htab)
 }
 
 static inline
-struct bucket * get_bucket(hash_t htab, const void *key)
+struct bucket * get_bucket(shash_t htab, const void *key)
 {
-    int hv = htab->hash_func(key) % htab->nbuckets; 
+    int hv = htab->shash_func(key) % htab->nbuckets; 
     return htab->buckets + hv;
 }
 
-void hash_insert(hash_t htab, const void *key, const void *value)
+void shash_insert(shash_t htab, const void *key, const void *value)
 {
     struct bucket *bkt = get_bucket(htab, key);
-    cmp_func_t compare = htab->cmp_func;
+    scmp_func_t compare = htab->cmp_func;
     struct elem *cursor;
 
     cursor = bkt->first;
@@ -106,11 +106,11 @@ void hash_insert(hash_t htab, const void *key, const void *value)
     cursor->value = (void *)value;
 }
 
-int hash_search(hash_t htab, const void *key, void **found)
+int shash_search(shash_t htab, const void *key, void **found)
 {
     struct bucket *bkt = get_bucket(htab, key);
     struct elem *cursor = bkt->first;
-    cmp_func_t compare = htab->cmp_func;
+    scmp_func_t compare = htab->cmp_func;
 
     while (cursor) {
         if (compare(cursor->key, key) == 0) {

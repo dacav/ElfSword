@@ -49,12 +49,12 @@ const char *build_str(const char *s)
 }
 
 static
-void add(hash_t ht, const char *k, const char *v)
+void add(shash_t ht, const char *k, const char *v)
 {
     const void *v1 = (const void *)build_str(k),
                *v2 = (const void *)build_str(v);
 
-    hash_insert(ht, v1, v2);
+    shash_insert(ht, v1, v2);
 }
 
 static const char *messages[] = {
@@ -63,11 +63,11 @@ static const char *messages[] = {
 
 int main(int argc, char **argv)
 {
-    hash_t ht;
+    shash_t ht;
     const char **msg;
 
     // build hash table
-    assert(ht = hash_new(hash, 4, cmp, free, free));
+    assert(ht = shash_new(hash, 4, cmp, free, free));
 
     // insert messages
     msg = messages;
@@ -83,12 +83,12 @@ int main(int argc, char **argv)
         const char *key = messages[i];
         const char *good_value = messages[i+1];
         char *value;
-        assert(hash_search(ht, (const void *)key, (void **)&value)
+        assert(shash_search(ht, (const void *)key, (void **)&value)
                == SHASH_FOUND);
         assert(((value == NULL) && (good_value == NULL))
                || strcmp(value, messages[i+1]) == 0);
     }
-    hash_free(ht);
+    shash_free(ht);
 
     exit(0);
 }
