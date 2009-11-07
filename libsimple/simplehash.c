@@ -106,7 +106,7 @@ void hash_insert(hash_t htab, const void *key, const void *value)
     cursor->value = (void *)value;
 }
 
-void *hash_search(hash_t htab, const void *key)
+int hash_search(hash_t htab, const void *key, void **found)
 {
     struct bucket *bkt = get_bucket(htab, key);
     struct elem *cursor = bkt->first;
@@ -114,10 +114,11 @@ void *hash_search(hash_t htab, const void *key)
 
     while (cursor) {
         if (compare(cursor->key, key) == 0) {
-            return (void *)cursor->value;
+            *found = (void *)cursor->value;
+            return SHASH_FOUND;
         }
         cursor = cursor->next;
     }
-    return NULL;
+    return SHASH_NOTFOUND;
 }
 

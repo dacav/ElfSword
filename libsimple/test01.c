@@ -81,9 +81,10 @@ int main(int argc, char **argv)
     int i;
     for (i = 0; i < 4; i ++) {
         const char *key = messages[i];
-        char *value = hash_search(ht, (const void *)key);
-        char *good_value = messages[i+1];
-
+        const char *good_value = messages[i+1];
+        char *value;
+        assert(hash_search(ht, (const void *)key, (void **)&value)
+               == SHASH_FOUND);
         assert(((value == NULL) && (good_value == NULL))
                || strcmp(value, messages[i+1]) == 0);
     }
