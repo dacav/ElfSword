@@ -5,7 +5,9 @@
 
 typedef struct slist * slist_t;
 
-slist_t list_new();
-slist_t list_append(slist_t l, void *o);
+slist_t slist_new();
+slist_t slist_append(slist_t l, void *o);
+
+void slist_map(slist_t l, siter_t f, void *ud);
 
 #endif // __defined_simple_simplelist_h
