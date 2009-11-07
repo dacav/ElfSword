@@ -15,7 +15,6 @@ struct elem {
 };
 
 struct bucket {
-    unsigned nelem;
     struct elem *first;
 };
 
@@ -29,7 +28,7 @@ struct shash {
 };
 
 shash_t shash_new(shash_func_t hf, unsigned nbuckets, scmp_func_t cp,
-                 sfree_mem_t key_free, sfree_mem_t val_free)
+                  sfree_mem_t key_free, sfree_mem_t val_free)
 {
     size_t total;
     void *chunk;
@@ -101,7 +100,6 @@ void shash_insert(shash_t htab, const void *key, const void *value)
     assert(cursor = malloc(sizeof(struct elem)));
     cursor->next = bkt->first;
     bkt->first = cursor;
-    bkt->nelem ++;
     cursor->key = (void *)key;
     cursor->value = (void *)value;
 }
@@ -118,6 +116,27 @@ int shash_search(shash_t htab, const void *key, void **found)
             return SHASH_FOUND;
         }
         cursor = cursor->next;
+    }
+    return SHASH_NOTFOUND;
+}
+
+int shash_delete(shash_t htab, const void *key, void **found)
+{
+    struct bucket *bkt = get_bucket(htab, key);
+    if (bkt->first == NULL)
+        return SHASH_NOTFOUND;
+    scmp_func_t compare = htab->cmp_func;
+    struct elem *cursor = bkt->first;
+    struct elem **prev = &bkt->first;
+    while (cursor) {
+        if (compare(cursor->key, key) == 0) {
+            (*prev) = cursor->next;
+            *found = cursor->value;
+            free(cursor);
+            return SHASH_FOUND;
+        }
+        cursor = cursor->next;
+        prev = &((*prev)->next);
     }
     return SHASH_NOTFOUND;
 }

@@ -14,7 +14,7 @@ libsimple_a_SOURCES = $(include_HEADERS) \
                       simplehash.c \
                       simplelist.c
 
-check_PROGRAMS = test00 test01 test02
+check_PROGRAMS = test00 test01 test02 test03
 
 TESTS = $(check_PROGRAMS)
 
@@ -30,3 +30,6 @@ test02_SOURCES = test02.c
 test02_LDFLAGS = -L./
 test02_LDADD   = -lsimple
 
+test03_SOURCES = test03.c
+test03_LDFLAGS = -L./
+test03_LDADD   = -lsimple
