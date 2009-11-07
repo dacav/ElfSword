@@ -27,7 +27,7 @@ struct shash {
     sfree_mem_t key_free;            // keys freeing function
 };
 
-shash_t shash_new(shash_func_t hf, unsigned nbuckets, scmp_func_t cp,
+shash_t shash_new(unsigned nbuckets, shash_func_t hf, scmp_func_t cp,
                   sfree_mem_t key_free, sfree_mem_t val_free)
 {
     size_t total;
@@ -131,7 +131,9 @@ int shash_delete(shash_t htab, const void *key, void **found)
     while (cursor) {
         if (compare(cursor->key, key) == 0) {
             (*prev) = cursor->next;
-            *found = cursor->value;
+            if (found != NULL) {
+                *found = cursor->value;
+            }
             free(cursor);
             return SHASH_FOUND;
         }
