@@ -56,28 +56,58 @@ void add(shash_t ht, const char *k, const char *v)
     shash_insert(ht, v1, v2);
 }
 
-int main(int argc, char **argv)
+void run_test(unsigned nbuckets, unsigned nkeys)
 {
     shash_t ht;
     int value, i;
     char *key;
 
-    assert(ht = shash_new(hash, 2, cmp, free, NULL));
-    shash_insert(ht, build_str("Hello"), (const void *)100);
-    for (i = 0; i < 20; i++) {
-        key = (char *)build_str("My name is foo\n");
-        key[4] ++;
-        shash_insert(ht, key, (const void *)i);
-    }
-    assert(shash_search(ht, (const void *)"Hello",
-                            (void *)&value) == SHASH_FOUND);
-    assert(value == 100);
-    assert(shash_delete(ht, (const void *)"Hello",
-                            (void *)&value) == SHASH_FOUND);
-    assert(value == 100);
-    assert(shash_search(ht, (const void *)"Hello",
-                            (void *)&value) == SHASH_NOTFOUND);
-    shash_free(ht);
+    // Create the hash table
+    assert(ht = shash_new(nbuckets, hash, cmp));
 
+    // Insert hello plus a lot of similar garbage
+    shash_insert(ht, build_str("Hello"), (const void *)100);
+    key = (char *)build_str("My name is foo");
+    for (i = 0; i < nkeys; i++) {
+        key[4] ++;  // successive modification of the key
+        shash_insert(ht, key, (const void *)i);
+        key = (char *)build_str(key);
+    }
+    free(key);
+
+    // Find "Hello"
+    assert(shash_search(ht, (const void *)"Hello",
+                        (void *)&value) == SHASH_FOUND);
+    assert(value == 100);
+    // Delete "Hello"
+    assert(shash_delete(ht, (const void *)"Hello", NULL) == SHASH_FOUND);
+    assert(value == 100);
+    // Check deletion
+    assert(shash_search(ht, (const void *)"Hello",
+                        (void *)&value) == SHASH_NOTFOUND);
+
+    // Check correct existance of other keys
+    key = (char *)build_str("My name is foo");
+    for (i = 0; i < nkeys; i++) {
+        key[4] ++;
+        // Other keys must exist
+        assert(shash_search(ht, (const void *)key, (void *)&value)
+               == SHASH_FOUND);
+        assert(value == i); // and value must be correct
+    }
+    free(key);
+    shash_free(ht, free, NULL);
+}
+
+int main(int argc, char **argv)
+{
+    unsigned m, n = 10;
+    while (--n) {
+        m = 50;
+        while (--m) {
+            run_test(n, m);
+        }
+    }
     exit(0);
 }
+

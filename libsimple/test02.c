@@ -29,6 +29,7 @@ int main(int argc, char **argv)
 
     slist_map(l, times2, NULL);
     slist_map(l, test, (void *)&n);
+    slist_delete(l, NULL);
 
     exit(0);
 }

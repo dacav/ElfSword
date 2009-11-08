@@ -67,7 +67,7 @@ int main(int argc, char **argv)
     const char **msg;
 
     // build hash table
-    assert(ht = shash_new(hash, 4, cmp, free, free));
+    assert(ht = shash_new(4, hash, cmp));
 
     // insert messages
     msg = messages;
@@ -88,7 +88,7 @@ int main(int argc, char **argv)
         assert(((value == NULL) && (good_value == NULL))
                || strcmp(value, messages[i+1]) == 0);
     }
-    shash_free(ht);
+    shash_free(ht, NULL, NULL);
 
     exit(0);
 }

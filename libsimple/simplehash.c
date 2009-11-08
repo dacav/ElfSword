@@ -22,13 +22,10 @@ struct shash {
     unsigned nbuckets;
     struct bucket *buckets;    
     shash_func_t shash_func;          // key hashing function
-    scmp_func_t cmp_func;            // key comparing function
-    sfree_mem_t val_free;            // object freeing function
-    sfree_mem_t key_free;            // keys freeing function
+    scmp_func_t cmp_func;             // key comparing function
 };
 
-shash_t shash_new(unsigned nbuckets, shash_func_t hf, scmp_func_t cp,
-                  sfree_mem_t key_free, sfree_mem_t val_free)
+shash_t shash_new(unsigned nbuckets, shash_func_t hf, scmp_func_t cp)
 {
     size_t total;
     void *chunk;
@@ -45,21 +42,17 @@ shash_t shash_new(unsigned nbuckets, shash_func_t hf, scmp_func_t cp,
                            (((char *)chunk) + sizeof(struct shash));
     table->shash_func = hf;
     table->cmp_func = cp;
-    table->val_free = val_free;
-    table->key_free = key_free;
     table->nbuckets = nbuckets;
     memset(bks, 0, sizeof(struct bucket) * nbuckets);
 
 	return table;
 }
 
-void shash_free(shash_t htab)
+void shash_free(shash_t htab, sfree_mem_t key_free, sfree_mem_t val_free)
 {
     int i;
     struct elem *cur, *tmp;
     struct bucket *bks = htab->buckets;
-    sfree_mem_t val_free = htab->val_free,
-               key_free = htab->key_free;
 
     for (i = 0; i < htab->nbuckets; i ++) {
         cur = bks[i].first;

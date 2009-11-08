@@ -11,9 +11,24 @@ struct slist {
     struct slist *prev;
 };
 
-slist_t slist_new(sfree_mem_t val_free)
+slist_t slist_new()
 {
     return NULL;
+}
+
+void slist_delete(slist_t l, sfree_mem_t f)
+{
+    slist_t e;
+
+    l->prev->next = NULL;
+    while (l) {
+        e = l;
+        l = l->next;
+        if (f != NULL) {
+            f(e->object);
+        }
+        free(e);
+    }
 }
 
 slist_t slist_append(slist_t l, void *o)
@@ -45,3 +60,4 @@ void slist_map(slist_t l, siter_t f, void *ud)
         cur = cur->next;
     } while (cur != l);
 }
+
