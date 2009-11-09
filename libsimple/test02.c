@@ -27,9 +27,9 @@ int main(int argc, char **argv)
     l = slist_append(l, (void *)2);
     l = slist_append(l, (void *)3);
 
-    slist_map(l, times2, NULL);
-    slist_map(l, test, (void *)&n);
-    slist_delete(l, NULL);
+    slist_foreach(l, times2, NULL);
+    slist_foreach(l, test, (void *)&n);
+    slist_free(l, NULL);
 
     exit(0);
 }
