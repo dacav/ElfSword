@@ -15,7 +15,7 @@ libsimple_a_SOURCES = $(include_HEADERS) \
                       simplelist.c
 
 check_PROGRAMS = test00 test01 test02 test03 test04 \
-                 test05
+                 test05 test06
 
 TESTS = $(check_PROGRAMS)
 
@@ -42,3 +42,7 @@ test04_LDADD   = -lsimple
 test05_SOURCES = test05.c
 test05_LDFLAGS = -L./
 test05_LDADD   = -lsimple
+
+test06_SOURCES = test06.c
+test06_LDFLAGS = -L./
+test06_LDADD   = -lsimple
