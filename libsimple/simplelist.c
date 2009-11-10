@@ -129,27 +129,22 @@ void slist_free(slist_t l, sfree_mem_t f)
     }
 }
 
-slist_t slist_slice(slist_t l, int from, int to)
+slist_t slist_slice(slist_t l, unsigned from, unsigned to)
 {
+    slist_t stop = l;
+    if (from >= to)
+        return NULL;
+
     slist_t ret = NULL;
-    slist_t cur;
-
-    int n = from - to;
-
-    cur = l->prev;
-    while (from < 0) {
-        l = slist_push(l, cur->object);
-        cur = cur->prev;
-        from ++;
-        n--;
+    to -= from;
+    while (from --) {
+        l = l->next;
     }
-    cur = l;
-    while (n--) {
-        l = slist_append(l, cur->object);
-        cur = cur->next;
-        n--;
+    while (to--) {
+        ret = slist_append(ret, l->object);
+        l = l->next;
+        if (l == stop) return ret;
     }
-
     return ret;
 }
 

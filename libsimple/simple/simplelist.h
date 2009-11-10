@@ -13,6 +13,6 @@ slist_t slist_pop(slist_t l, void **o);
 int slist_empty(slist_t l);
 slist_t slist_foreach(slist_t l, siter_t f, void *ud);
 slist_t slist_filter(slist_t l, sfilter_t f, void *ud);
-slist_t slist_slice(slist_t l, int from, int to);
+slist_t slist_slice(slist_t l, unsigned from, unsigned to);
 
 #endif // __defined_simple_simplelist_h

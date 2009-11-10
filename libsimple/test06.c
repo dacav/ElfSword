@@ -30,11 +30,23 @@ void test_push_pop()
     slist_free(l, NULL);
 }
 
+void * check_slice(void *ud, void *val)
+{
+    int cmp = *(int *)ud;
+    assert(cmp == (int)val);
+    *(int *)ud = cmp - 1;
+    return val;
+}
+
 void test_slice()
 {
-    slist_t l = populate(0);
+    slist_t l = populate(30);
+    slist_t sl = slist_slice(l, 0, 1000);
+    int j;
 
-
+    j = 29;
+    sl = slist_foreach(sl, check_slice, (void *)&j);
+    slist_free(sl, NULL);
     slist_free(l, NULL);
 }
 
