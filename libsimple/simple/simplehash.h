@@ -1,6 +1,10 @@
 #ifndef __defined_simple_simpleshash_h
 #define __defined_simple_simpleshash_h
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <simple.h>
 
 #define SHASH_FOUND 0
@@ -16,5 +20,9 @@ void shash_free(shash_t htab, sfree_mem_t key_free, sfree_mem_t val_free);
 void shash_insert(shash_t htab, const void *key, const void *value);
 int shash_search(shash_t htab, const void *key, void **found);
 int shash_delete(shash_t htab, const void *key, void **found);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif // __defined_simple_shash_h

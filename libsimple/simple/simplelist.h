@@ -3,6 +3,10 @@
 
 #include <simple.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 typedef struct slist * slist_t;
 
 slist_t slist_new();
@@ -14,5 +18,9 @@ int slist_empty(slist_t l);
 slist_t slist_foreach(slist_t l, siter_t f, void *ud);
 slist_t slist_filter(slist_t l, sfilter_t f, void *ud);
 slist_t slist_slice(slist_t l, unsigned from, unsigned to);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif // __defined_simple_simplelist_h
