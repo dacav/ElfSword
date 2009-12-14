@@ -40,7 +40,7 @@ struct elf {
     union {
         void *data;             // Memory mapped file;
         uint8_t *data8b;        // 8 bit pointer;
-        elf_t *32_Ehdr *header; // ELF header;
+        Elf32_Ehdr *header; // ELF header;
     } file;
     size_t len;                 // File size;
     int fd;                     // File descriptor;
@@ -68,7 +68,7 @@ void elf_release_file(elf_t * elf)
     free(elf);
 }
 
-elf_err_t elf_map_file(const char *filename, elf_t **elf);
+elf_err_t elf_map_file(const char *filename, elf_t **elf)
 {
     int fd;
     struct stat buf;
@@ -81,16 +81,18 @@ elf_err_t elf_map_file(const char *filename, elf_t **elf);
     memset((void *)elf, 0, sizeof(elf_t));
 
     /* File mapping */
-    elf->fd = fd = open(filename, O_RDONLY);
+    ret->fd = fd = open(filename, O_RDONLY);
     if (fd == -1 || fstat(fd, &buf) == -1) {
         elf_release_file(ret);
         return ELF_OPENING;
     }
-    elf->len = len = buf.st_size;
+    ret->len = len = buf.st_size;
     data = mmap(NULL, len, PROT_READ, MAP_SHARED, fd, 0);
     if (data == MAP_FAILED) {
         elf_release_file(ret);
         return ELF_MAPPING;
     }
+    *elf = ret;
+    return ELF_SUCCESS;
 }
 

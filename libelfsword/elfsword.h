@@ -1,2 +1,2 @@
-#include <elfsword/elf.h>
-#include <elfsword/elf_spec.h>
+#include <elfsword/elfmap.h>
+#include <elfsword/errors.h>

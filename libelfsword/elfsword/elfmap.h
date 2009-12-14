@@ -59,6 +59,5 @@ void elf_release_file(elf_t * elf);
 
 #ifdef __cplusplus
 }
-#endif
 
 #endif /* __defined_elfsword_elf_h */
