@@ -8,7 +8,7 @@ const char *errors[] = {
     "Invalid ELF object"
 }
 
-const char * elf_error(elf_err_t err)
+const char * elf_error (elf_err_t err)
 {
     return errors[err];
 }

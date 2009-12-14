@@ -33,6 +33,13 @@ typedef enum {
     ELF_INVALID = 3     /**< Invalid ELF object. */
 } elf_err_t;
 
+/** Returns a NULL-terminated string describing the returned error
+ *
+ * @param err The error identifier;
+ * @return The string describing the error.
+ */
+const char * elf_error (elf_err_t err);
+
 #ifdef __cplusplus
 }
 #endif

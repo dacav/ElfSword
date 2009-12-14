@@ -5,11 +5,11 @@ lib_LIBRARIES = libelfsword.a
 
 # Public headers to be installed in the $PREFIX/include directory:
 includetreedir = $(prefix)/include/elfsword
-includetree_HEADERS = elfsword/elfmap.h elfsword/errors.h
+includetree_HEADERS = elfsword/elfmap.h elfsword/errors.h elfsword/check.h
 include_HEADERS = elfsword.h
 
 libelfsword_a_SOURCES = $(include_HEADERS) \
                         $(includetree_HEADERS) \
-                        algorithms.h \
-                        elfmap.c
+                        algorithms.h descriptor.h \
+                        check.c elfmap.c
 

@@ -1,6 +1,6 @@
 #include <elfsword.h>
 
-unsigned long elf_hash(const unsigned char *name)
+unsigned long elf_hash (const unsigned char *name)
 {
     unsigned long h = 0, g;
     while (*name) {

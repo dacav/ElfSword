@@ -32,30 +32,9 @@
 #include <elf.h>
 
 #include <dacav.h>
+#include "descriptor.h"
 
-/* ELF mapping type */
-struct elf {
-
-    /* Allocated data */
-    union {
-        void *data;             // Memory mapped file;
-        uint8_t *data8b;        // 8 bit pointer;
-        Elf32_Ehdr *header; // ELF header;
-    } file;
-    size_t len;                 // File size;
-    int fd;                     // File descriptor;
-
-    /* Auxiliary data */
-    //Elf32_Shdr *names;      
-    dhash_t *secs;              // Sections hash by name;
-    struct {
-        dhash_t *symtab;        // Symbols from symtab;
-        dhash_t *dynsym;        // Symbols from dynsym;
-    };
-
-};
-
-void elf_release_file(elf_t * elf)
+void elf_release_file (elf_t * elf)
 {
     assert(elf != NULL);
 
@@ -68,7 +47,7 @@ void elf_release_file(elf_t * elf)
     free(elf);
 }
 
-elf_err_t elf_map_file(const char *filename, elf_t **elf)
+elf_err_t elf_map_file (const char *filename, elf_t **elf)
 {
     int fd;
     struct stat buf;
@@ -92,6 +71,7 @@ elf_err_t elf_map_file(const char *filename, elf_t **elf)
         elf_release_file(ret);
         return ELF_MAPPING;
     }
+    ret->file.data = data;
     *elf = ret;
     return ELF_SUCCESS;
 }
