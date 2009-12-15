@@ -23,14 +23,18 @@
  * Checks on ELF descriptor;
  */
 
-#ifndef __defined_descriptor_h
-#define __defined_descriptor_h
+#ifndef __defined_elfsword_descriptor_h
+#define __defined_elfsword_descriptor_h
 
 #include <stdbool.h>
+#include <stdint.h>
+#include <stdlib.h>
+#include <elf.h>
+
 #include <dacav.h>
 
 /** ELF mapping type */
-struct elf {
+typedef struct {
 
     union {
         void *data;             /**< Memory mapped file; */
@@ -40,13 +44,13 @@ struct elf {
     size_t len;                 /**< File size; */
     int fd;                     /**< File descriptor; */
 
-    //Elf32_Shdr *names;      
+    Elf32_Shdr *names;          /**< Pointer to the name section */
     dhash_t *secs;              /**< Sections hash by name; */
     struct {
         dhash_t *symtab;        /**< Symbols from symtab; */
         dhash_t *dynsym;        /**< Symbols from dynsym; */
     } syms;                     /**< Symbols hash by name; */
 
-};
+} elf_t;
 
-#endif // __defined_descriptor_h
+#endif // __defined_elfsword_descriptor_h

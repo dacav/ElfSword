@@ -23,16 +23,25 @@
  * Checks on ELF descriptor;
  */
 
-#ifndef __defined_check_h
-#define __defined_check_h
+#ifndef __defined_elfsword_check_h
+#define __defined_elfsword_check_h
 
 #include <stdbool.h>
+#include <elfsword.h>
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 /** Checks the ELF magic number to be correct
  *
  * @param elf The ELF object descriptor;
  * @return true if the object has a valid magic number, false otherwise.
  */
-bool elf_check_magic(elf_t * elf);
+bool elf_check_magic (elf_t * elf);
 
-#endif // __defined_check_h
+#ifdef __cplusplus
+}
+#endif
+
+#endif // __defined_elfsword_check_h

@@ -18,8 +18,6 @@
  *
  */
 
-#include <elfsword.h>
-
 /* System libraries */
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -32,7 +30,8 @@
 #include <elf.h>
 
 #include <dacav.h>
-#include "descriptor.h"
+#include <elfsword.h>
+
 
 void elf_release_file (elf_t * elf)
 {
@@ -44,7 +43,26 @@ void elf_release_file (elf_t * elf)
     if (elf->fd != -1) {
         close(elf->fd);
     }
+    if (elf->secs) {
+        dhash_free(elf->secs, NULL, NULL);
+    }
+    if (elf->syms.symtab) {
+        dhash_free(elf->syms.symtab, NULL, NULL);
+    }
+    if (elf->syms.dynsym) {
+        dhash_free(elf->syms.dynsym, NULL, NULL);
+    }
     free(elf);
+}
+
+static
+Elf32_Shdr *seek_strtab_section (elf_t *elf)
+{
+    Elf32_Half strndx = elf->file.header->e_shentsize;
+    if (strndx == SHN_UNDEF) {
+        return NULL;
+    }
+    return elf_sects_seek(elf, strndx);
 }
 
 elf_err_t elf_map_file (const char *filename, elf_t **elf)
@@ -72,6 +90,7 @@ elf_err_t elf_map_file (const char *filename, elf_t **elf)
         return ELF_MAPPING;
     }
     ret->file.data = data;
+    ret->names = seek_strtab_section(ret);
     *elf = ret;
     return ELF_SUCCESS;
 }
