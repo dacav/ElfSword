@@ -1,4 +1,4 @@
-AM_CFLAGS = -I./
+AM_CFLAGS = -I./ -Wall
 
 # Produced library:
 lib_LIBRARIES = libelfsword.a

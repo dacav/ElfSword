@@ -58,7 +58,7 @@ void elf_release_file (elf_t * elf)
 static
 Elf32_Shdr *seek_strtab_section (elf_t *elf)
 {
-    Elf32_Half strndx = elf->file.header->e_shentsize;
+    Elf32_Half strndx = elf->file.header->e_shstrndx;
     if (strndx == SHN_UNDEF) {
         return NULL;
     }
@@ -93,5 +93,5 @@ elf_err_t elf_map_file (const char *filename, elf_t **elf)
     ret->names = seek_strtab_section(ret);
     *elf = ret;
     return ELF_SUCCESS;
-}
+};
 

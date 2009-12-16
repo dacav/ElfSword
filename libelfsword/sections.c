@@ -92,13 +92,16 @@ void elf_sects_iter_free (diter_t *iter)
 
 /* ------ Optimization with hash tables ------------------------------- */
 
+#include <stdio.h>
+
 static inline
 void fill_hash (elf_t *elf, dhash_t *table)
 {
-    const char *map = elf->file.data8b +
+    const char *map = (char *)elf->file.data8b +
                       elf->names->sh_offset;
 
     diter_t *iter = elf_sects_iter_new(elf);
+    int i = 0;
     while (diter_hasnext(iter)) {
         Elf32_Shdr *sec = diter_next(iter);
         const char *name = map + sec->sh_name;
@@ -116,6 +119,7 @@ dhash_t *elf_sects_get_hash (elf_t *elf)
     if (secs == NULL) {
         secs = dhash_new(ELF_SECHASH_SIZE, (dhash_func_t)elf_hash,
                          (dcmp_func_t)strcmp);
+        fill_hash(elf, secs);
         elf->secs = secs;
     }
     return secs;

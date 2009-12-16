@@ -12,9 +12,10 @@ int main (int argc, char **argv)
 
     dhash_t *table = elf_sects_get_hash(me);
     diter_t *iter = dhash_iter_new(table);
+    int i = 0;
     while (diter_hasnext(iter)) {
         dhash_pair_t *pair = (dhash_pair_t *) diter_next(iter);
-        printf("name=%d address=%p\n",
+        printf("id=%d name='%s' address=%p\n", i ++,
                (const char *) dhash_key(pair), dhash_val(pair));
     }
     dhash_iter_free(table);
