@@ -1,19 +1,21 @@
 #include <elfsword.h>
 #include <dacav.h>
 #include <assert.h>
+#include <elf.h>
 
 int main (int argc, char **argv)
 {
     elf_t *me;
     diter_t *iter;
-    int i = 0;
 
     assert(elf_map_file(argv[0], &me) == ELF_SUCCESS);
-    iter = elf_sects_iter_new(me);
+    iter = elf_sect_iter_new(me);
     while (diter_hasnext(iter)) {
-        printf("Section %d : %p\n", i++, diter_next(iter));
+        Elf32_Shdr *sh = (Elf32_Shdr *) diter_next(iter);
+        printf("name='%s' address=%p\n",
+               elf_sect_name(me, sh), (void *) sh);
     }
-    elf_sects_iter_free(iter);
+    elf_sect_iter_free(iter);
     elf_release_file(me);
 
     exit(0);

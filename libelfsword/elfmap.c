@@ -62,7 +62,7 @@ Elf32_Shdr *seek_strtab_section (elf_t *elf)
     if (strndx == SHN_UNDEF) {
         return NULL;
     }
-    return elf_sects_seek(elf, strndx);
+    return elf_sect_seek(elf, strndx);
 }
 
 elf_err_t elf_map_file (const char *filename, elf_t **elf)

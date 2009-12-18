@@ -25,15 +25,26 @@
 #include <elfsword.h>
 #include "algorithms.h"
 
-/* ------ Basic section access routine -------------------------------- */
+/* ------ Basic section access routines ------------------------------- */
 
-Elf32_Shdr *elf_sects_seek (elf_t *elf, unsigned index)
+Elf32_Shdr *elf_sect_seek (elf_t *elf, unsigned index)
 {
     Elf32_Ehdr *header = elf->file.header;
     uint8_t *pos = (uint8_t *)header;
     pos += header->e_shoff;             // first section;
     pos += header->e_shentsize * index; // move to selected section;
     return (Elf32_Shdr *) pos;
+}
+
+const char *elf_sect_name (elf_t *elf, Elf32_Shdr *sec)
+{
+    const char *map = (char *)elf->file.data8b +
+                      elf->names->sh_offset;
+    if (sec == NULL) {
+        return map;
+    } else {
+        return map + sec->sh_name;
+    }
 }
 
 /* ------ Iterators among sections------------------------------------- */
@@ -58,7 +69,7 @@ int iter_hasnext (struct iterable *it)
     return it->cursor < it->end;
 }
 
-diter_t *elf_sects_iter_new (elf_t *elf)
+diter_t *elf_sect_iter_new (elf_t *elf)
 {
     diter_t *ret = diter_new((dnext_t)iter_next, (dhasnext_t)iter_hasnext,
                              NULL, NULL, sizeof(struct iterable));
@@ -85,31 +96,27 @@ diter_t *elf_sects_iter_new (elf_t *elf)
     return ret;
 }
 
-void elf_sects_iter_free (diter_t *iter)
+void elf_sect_iter_free (diter_t *iter)
 {
     diter_free(iter);
 }
 
 /* ------ Optimization with hash tables ------------------------------- */
 
-#include <stdio.h>
-
 static inline
 void fill_hash (elf_t *elf, dhash_t *table)
 {
-    const char *map = (char *)elf->file.data8b +
-                      elf->names->sh_offset;
-
-    diter_t *iter = elf_sects_iter_new(elf);
+    const char *map = elf_sect_name(elf, NULL); 
+    diter_t *iter = elf_sect_iter_new(elf);
     while (diter_hasnext(iter)) {
         Elf32_Shdr *sec = diter_next(iter);
         const char *name = map + sec->sh_name;
         dhash_insert(table, (void *)name, (void *)sec);
     }
-    elf_sects_iter_free(iter);
+    elf_sect_iter_free(iter);
 }
 
-dhash_t *elf_sects_get_hash (elf_t *elf)
+dhash_t *elf_sect_get_hash (elf_t *elf)
 {
     if (elf->names == NULL) {
         return NULL;    // There's no string table;

@@ -40,13 +40,13 @@ extern "C" {
  * @param elf The ELF object descriptor;
  * @return An iterator among ELF object's sections.
  */
-diter_t *elf_sects_iter_new (elf_t *elf);
+diter_t *elf_sect_iter_new (elf_t *elf);
 
 /** Free the given sections iterator.
  *
  * @param iter The iterator to be freed.
  */
-void elf_sects_iter_free (diter_t *iter);
+void elf_sect_iter_free (diter_t *iter);
 
 /** Get the hash table for section names.
  *
@@ -54,7 +54,7 @@ void elf_sects_iter_free (diter_t *iter);
  * @return The hash table if the object file has a string table, NULL
  *         otherwise.
  */
-dhash_t *elf_sects_get_hash (elf_t *elf);
+dhash_t *elf_sect_get_hash (elf_t *elf);
 
 /** Get the required section header
  *
@@ -62,7 +62,16 @@ dhash_t *elf_sects_get_hash (elf_t *elf);
  * @param index The index of the required section;
  * @return A pointer to the section, or NULL if there's no such section.
  */
-Elf32_Shdr *elf_sects_seek (elf_t *elf, unsigned index);
+Elf32_Shdr *elf_sect_seek (elf_t *elf, unsigned index);
+
+/** Get the required section name.
+ *
+ * @param elf The ELF object descriptor;
+ * @param sec The section whose name must be read or NULL;
+ * @return The name of the given section, or the starting address of the
+ *         section names table if NULL is given as second parameter.
+ */
+const char *elf_sect_name (elf_t *elf, Elf32_Shdr *sec);
 
 #ifdef __cplusplus
 }
