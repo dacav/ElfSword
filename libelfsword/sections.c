@@ -101,7 +101,6 @@ void fill_hash (elf_t *elf, dhash_t *table)
                       elf->names->sh_offset;
 
     diter_t *iter = elf_sects_iter_new(elf);
-    int i = 0;
     while (diter_hasnext(iter)) {
         Elf32_Shdr *sec = diter_next(iter);
         const char *name = map + sec->sh_name;
