@@ -73,6 +73,19 @@ Elf32_Shdr *elf_sect_seek (elf_t *elf, unsigned index);
  */
 const char *elf_sect_name (elf_t *elf, Elf32_Shdr *sec);
 
+/** Retrieve information about the content of a section
+ *
+ * @param elf The ELF object descriptor;
+ * @param sec The section whose content info will be retrieved;
+ * @param content The address of the location where the section content
+ *                address will be stored;
+ * @param size The address of the location where the size will be stored;
+ * @return true if the section contains data, false if the section type is
+ *         SHT_NOBITS.
+ */
+bool elf_sect_content (elf_t *elf, Elf32_Shdr *sec,
+                       uint8_t **content, size_t *size);
+
 #ifdef __cplusplus
 }
 #endif

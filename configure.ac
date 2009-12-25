@@ -12,7 +12,7 @@ AC_PROG_RANLIB
 AC_CHECK_FUNCS([memset])
 AC_CHECK_FUNCS([munmap])
 
-AC_CHECK_HEADERS([fcntl.h stdint.h stdlib.h string.h unistd.h assert.h])
+AC_CHECK_HEADERS([fcntl.h stdint.h stdlib.h stdbool.h string.h unistd.h assert.h])
 
 AC_CHECK_HEADER([dacav.h],[],
                 [AC_MSG_ERROR(libdacav not found.  Please install libdacav)])

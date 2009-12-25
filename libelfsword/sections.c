@@ -21,11 +21,23 @@
 #include <elf.h>
 #include <dacav.h>
 #include <string.h>
+#include <stdint.h>
+#include <stdbool.h>
 
 #include <elfsword.h>
 #include "algorithms.h"
 
 /* ------ Basic section access routines ------------------------------- */
+
+bool elf_sect_content (elf_t *elf, Elf32_Shdr *sec,
+                       uint8_t **content, size_t *size)
+{
+    if (hdr->sh_type == SHT_NOBITS)
+        return false;
+    *content = elf->file.data8b + hdr->sh_offset;
+    *size = hdr->sh_size;
+    return true;
+}
 
 Elf32_Shdr *elf_sect_seek (elf_t *elf, unsigned index)
 {
