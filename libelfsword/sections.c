@@ -29,23 +29,26 @@
 
 /* ------ Basic section access routines ------------------------------- */
 
-bool elf_sect_content (elf_t *elf, Elf32_Shdr *sec,
-                       uint8_t **content, size_t *size)
+elf_err_t elf_sect_content (elf_t *elf, Elf32_Shdr *sec,
+                            uint8_t **content, size_t *size)
 {
     if (sec->sh_type == SHT_NOBITS)
-        return false;
+        return ELF_NOSECTION;
     *content = elf->file.data8b + sec->sh_offset;
     *size = sec->sh_size;
-    return true;
+    return ELF_SUCCESS;
 }
 
-Elf32_Shdr *elf_sect_seek (elf_t *elf, unsigned index)
+elf_err_t elf_sect_seek (elf_t *elf, unsigned index, Elf32_Shdr **sec)
 {
     Elf32_Ehdr *header = elf->file.header;
+    if (index >= header->e_shnum)
+        return ELF_NOSECTION;
     uint8_t *pos = (uint8_t *)header;
     pos += header->e_shoff;             // first section;
     pos += header->e_shentsize * index; // move to selected section;
-    return (Elf32_Shdr *) pos;
+    *sec = (Elf32_Shdr *) pos;
+    return ELF_SUCCESS;
 }
 
 const char *elf_sect_name (elf_t *elf, Elf32_Shdr *sec)
@@ -148,10 +151,10 @@ void fill_hash (elf_t *elf, dhash_t *table)
     elf_sect_iter_free(iter);
 }
 
-dhash_t *elf_sect_get_hash (elf_t *elf)
+elf_err_t elf_sect_get_hash (elf_t *elf, dhash_t **table)
 {
     if (elf->names == NULL) {
-        return NULL;    // There's no string table;
+        return ELF_NOSECTION;       // There's no string table;
     }
     dhash_t *secs = elf->secs;
     if (secs == NULL) {
@@ -160,6 +163,7 @@ dhash_t *elf_sect_get_hash (elf_t *elf)
         fill_hash(elf, secs);
         elf->secs = secs;
     }
-    return secs;
+    *table = secs;
+    return ELF_SUCCESS;
 }
 

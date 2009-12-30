@@ -26,8 +26,6 @@
 #ifndef __defined_elfsword_errors_h
 #define __defined_elfsword_errors_h
 
-#include <elfsword.h>
-
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -37,7 +35,9 @@ typedef enum {
     ELF_SUCCESS = 0,    /**< No error. */
     ELF_OPENING = 1,    /**< Unable to open the file. */
     ELF_MAPPING = 2,    /**< Unable to map the file. */
-    ELF_INVALID = 3     /**< Invalid ELF object. */
+    ELF_INVALID = 3,    /**< Invalid ELF object. */
+    ELF_NOSECTION = 4,  /**< Section unavailable */
+    ELF_NODATA = 5      /**< Data unavailable */
 } elf_err_t;
 
 /** Returns a NULL-terminated string describing the returned error

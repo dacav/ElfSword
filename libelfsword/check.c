@@ -22,17 +22,16 @@
 #include <stdio.h>
 #include <elfsword.h>
 
-
-bool elf_check_magic (elf_t * elf)
+elf_err_t elf_check_magic (elf_t * elf)
 {
     unsigned char *magic;
 
     magic = elf->file.header->e_ident;
-    bool ret = magic[EI_MAG0] == ELFMAG0 &&
+    return magic[EI_MAG0] == ELFMAG0 &&
            magic[EI_MAG1] == ELFMAG1 &&
            magic[EI_MAG2] == ELFMAG2 &&
-           magic[EI_MAG3] == ELFMAG3;
-    return ret;
+           magic[EI_MAG3] == ELFMAG3 ?
+           ELF_SUCCESS : ELF_INVALID;
 }
 
 

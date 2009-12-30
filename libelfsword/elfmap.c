@@ -46,12 +46,6 @@ void elf_release_file (elf_t * elf)
     if (elf->secs) {
         dhash_free(elf->secs, NULL, NULL);
     }
-    if (elf->syms.symtab) {
-        dhash_free(elf->syms.symtab, NULL, NULL);
-    }
-    if (elf->syms.dynsym) {
-        dhash_free(elf->syms.dynsym, NULL, NULL);
-    }
     free(elf);
 }
 
@@ -62,7 +56,9 @@ Elf32_Shdr *seek_strtab_section (elf_t *elf)
     if (strndx == SHN_UNDEF) {
         return NULL;
     }
-    return elf_sect_seek(elf, strndx);
+    Elf32_Shdr *ret;
+    return elf_sect_seek(elf, strndx, &ret) == ELF_SUCCESS ?
+           ret : NULL;
 }
 
 elf_err_t elf_map_file (const char *filename, elf_t **elf)

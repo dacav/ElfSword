@@ -55,19 +55,29 @@ void elf_sect_iter_free (diter_t *iter);
 
 /** Get the hash table for section names.
  *
+ * The retrieved pointer (second parameter) makes sense only if
+ * ELF_SUCCESS is returned.
+ *
  * @param elf The ELF object descriptor.
- * @return The hash table if the object file has a string table, NULL
+ * @param table A pointer where the hash table address will be stored;
+ * @return ELF_SUCCESS if there's the string table, ELF_NOSECTION 
  *         otherwise.
  */
-dhash_t *elf_sect_get_hash (elf_t *elf);
+elf_err_t elf_sect_get_hash (elf_t *elf, dhash_t **table);
 
 /** Get the required section header
  *
+ * The retrieved pointer (second parameter) makes sense only if
+ * ELF_SUCCESS is returned.
+ *
  * @param elf The ELF object descriptor;
  * @param index The index of the required section;
- * @return A pointer to the section, or NULL if there's no such section.
+ * @param sec The address of a section header pointer;
+ * @return ELF_SUCCESS on success, ELF_NOSECTION if the required index is
+ *         greater than the number of available sections.
+ *
  */
-Elf32_Shdr *elf_sect_seek (elf_t *elf, unsigned index);
+elf_err_t elf_sect_seek (elf_t *elf, unsigned index, Elf32_Shdr **sec);
 
 /** Get the required section name.
  *
@@ -85,11 +95,11 @@ const char *elf_sect_name (elf_t *elf, Elf32_Shdr *sec);
  * @param content The address of the location where the section content
  *                address will be stored;
  * @param size The address of the location where the size will be stored;
- * @return true if the section contains data, false if the section type is
- *         SHT_NOBITS.
+ * @return ELF_SUCCESS if the section contains data, ELF_NOSECTION if the
+ *         section type is SHT_NOBITS.
  */
-bool elf_sect_content (elf_t *elf, Elf32_Shdr *sec,
-                       uint8_t **content, size_t *size);
+elf_err_t elf_sect_content (elf_t *elf, Elf32_Shdr *sec,
+                            uint8_t **content, size_t *size);
 
 #ifdef __cplusplus
 }

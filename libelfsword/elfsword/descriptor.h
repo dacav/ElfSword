@@ -46,10 +46,6 @@ typedef struct {
 
     Elf32_Shdr *names;          /**< Pointer to the name section */
     dhash_t *secs;              /**< Sections hash by name; */
-    struct {
-        dhash_t *symtab;        /**< Symbols from symtab; */
-        dhash_t *dynsym;        /**< Symbols from dynsym; */
-    } syms;                     /**< Symbols hash by name; */
 
 } elf_t;
 

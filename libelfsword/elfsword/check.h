@@ -38,7 +38,7 @@ extern "C" {
  * @param elf The ELF object descriptor;
  * @return true if the object has a valid magic number, false otherwise.
  */
-bool elf_check_magic (elf_t * elf);
+elf_err_t elf_check_magic (elf_t * elf);
 
 #ifdef __cplusplus
 }

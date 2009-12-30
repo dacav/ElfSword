@@ -5,7 +5,9 @@ const char *errors[] = {
     "No error",
     "Unable to open the file",
     "Unable to map the file",
-    "Invalid ELF object"
+    "Invalid ELF object",
+    "Section unavailable",
+    "Data unavailable"
 }
 
 const char * elf_error (elf_err_t err)
