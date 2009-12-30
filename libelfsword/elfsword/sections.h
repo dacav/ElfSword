@@ -37,10 +37,15 @@ extern "C" {
 
 /** Build a libdacav iterator on sections.
  *
+ * Iteration will be achieved only among sections whose type matches the
+ * one given as second parameter.
+ *
  * @param elf The ELF object descriptor;
+ * @param sh_type Matching type: by providing SHT_NULL filtering will be
+ *                disabled;
  * @return An iterator among ELF object's sections.
  */
-diter_t *elf_sect_iter_new (elf_t *elf);
+diter_t *elf_sect_iter_new (elf_t *elf, Elf32_Word sh_type);
 
 /** Free the given sections iterator.
  *

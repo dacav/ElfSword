@@ -65,6 +65,7 @@ struct iterable {
     uint8_t *cursor;        // Current address;
     uint8_t *end;           // Last section address;
     Elf32_Half shentsize;   // Pointer increment;
+    Elf32_Word sh_type;     // Filtering section type;
 };
 
 static
@@ -78,10 +79,29 @@ void *iter_next (struct iterable *it)
 static
 int iter_hasnext (struct iterable *it)
 {
-    return it->cursor < it->end;
+    union {
+        Elf32_Shdr *hdr;
+        uint8_t *cursor;
+    } ptr;
+    uint8_t *end = it->end;
+    Elf32_Word sh_type = it->sh_type;
+
+    ptr.cursor = it->cursor;
+    if (sh_type == SHT_NULL) {
+        // There's no filter. Just check position.
+        return ptr.cursor < end;
+    }
+    while (ptr.cursor < end) {
+        if (ptr.hdr->sh_type == sh_type) {
+            it->cursor = ptr.cursor;    // update cursor.
+            return 1;
+        }
+        ptr.cursor += it->shentsize;
+    }
+    return 0;   // End of list has been reached.
 }
 
-diter_t *elf_sect_iter_new (elf_t *elf)
+diter_t *elf_sect_iter_new (elf_t *elf, Elf32_Word sh_type)
 {
     diter_t *ret = diter_new((dnext_t)iter_next, (dhasnext_t)iter_hasnext,
                              NULL, NULL, sizeof(struct iterable));
@@ -102,8 +122,8 @@ diter_t *elf_sect_iter_new (elf_t *elf)
     pos += shentsize * header->e_shnum;
     it->end = pos;
 
-    // Step increment;
-    it->shentsize = shentsize;
+    it->shentsize = shentsize; // Step increment;
+    it->sh_type = sh_type;     // Filter.
 
     return ret;
 }
@@ -119,7 +139,7 @@ static inline
 void fill_hash (elf_t *elf, dhash_t *table)
 {
     const char *map = elf_sect_name(elf, NULL); 
-    diter_t *iter = elf_sect_iter_new(elf);
+    diter_t *iter = elf_sect_iter_new(elf, SHT_NULL);
     while (diter_hasnext(iter)) {
         Elf32_Shdr *sec = diter_next(iter);
         const char *name = map + sec->sh_name;

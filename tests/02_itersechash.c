@@ -17,7 +17,7 @@ int main (int argc, char **argv)
         printf("name='%s' address=%p\n",
                (const char *) dhash_key(pair), dhash_val(pair));
     }
-    dhash_iter_free(table);
+    dhash_iter_free(iter);
 
     exit(0);
 }
