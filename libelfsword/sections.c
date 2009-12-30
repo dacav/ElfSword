@@ -32,10 +32,10 @@
 bool elf_sect_content (elf_t *elf, Elf32_Shdr *sec,
                        uint8_t **content, size_t *size)
 {
-    if (hdr->sh_type == SHT_NOBITS)
+    if (sec->sh_type == SHT_NOBITS)
         return false;
-    *content = elf->file.data8b + hdr->sh_offset;
-    *size = hdr->sh_size;
+    *content = elf->file.data8b + sec->sh_offset;
+    *size = sec->sh_size;
     return true;
 }
 
