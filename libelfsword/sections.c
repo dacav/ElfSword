@@ -62,7 +62,7 @@ const char *elf_sect_name (elf_t *elf, Elf32_Shdr *sec)
     }
 }
 
-/* ------ Iterators among sections------------------------------------- */
+/* ------ Iterators among sections ------------------------------------ */
 
 struct iterable {
     uint8_t *cursor;        // Current address;

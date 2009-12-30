@@ -89,6 +89,9 @@ elf_err_t elf_sect_seek (elf_t *elf, unsigned index, Elf32_Shdr **sec);
 const char *elf_sect_name (elf_t *elf, Elf32_Shdr *sec);
 
 /** Retrieve information about the content of a section
+ * 
+ * The retrieved pointers (third and fourth parameters) make sense only if
+ * ELF_SUCCESS is returned.
  *
  * @param elf The ELF object descriptor;
  * @param sec The section whose content info will be retrieved;
