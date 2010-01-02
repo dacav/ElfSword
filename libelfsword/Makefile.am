@@ -1,4 +1,4 @@
-AM_CFLAGS = -I./ -Wall
+AM_CFLAGS = -I./ -Wall -Werror -std=gnu99 -pedantic
 
 # Produced library:
 lib_LIBRARIES = libelfsword.a

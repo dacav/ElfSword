@@ -1,4 +1,4 @@
-AM_CFLAGS = -I$(top_srcdir)/libelfsword/
+AM_CFLAGS = -I$(top_srcdir)/libelfsword/ -Wall -std=gnu99 -Werror -pedantic
 AM_LDFLAGS = -L$(top_srcdir)/libelfsword/
 LDADD = -ldacav -lelfsword
 

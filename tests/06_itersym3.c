@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <dacav.h>
 #include <elf.h>
+#include <string.h>
 
 static
 void compare (elf_t *elf, elf_symb_desc_t *s0, elf_symb_desc_t *s1)

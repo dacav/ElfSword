@@ -127,5 +127,5 @@ elf_err_t elf_map_file (const char *filename, elf_t **elf)
  
     *elf = ret;
     return ELF_SUCCESS;
-};
+}
 

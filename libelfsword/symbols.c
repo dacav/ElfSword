@@ -131,7 +131,7 @@ diter_t *elf_symb_iter_new (elf_t *elf, Elf32_Word sh_type)
                              NULL, NULL, sizeof(struct iterable));
 
     struct iterable *it = (struct iterable *) diter_get_iterable(ret);
-    memset((void *)it->symtabs, NULL, sizeof(Elf32_Shdr *) * 2);
+    memset((void *)it->symtabs, (int)NULL, sizeof(Elf32_Shdr *) * 2);
     switch (sh_type) {
         case SHT_SYMTAB:
             it->symtabs[0] = elf->symtab;
