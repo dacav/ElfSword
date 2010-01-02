@@ -34,4 +34,3 @@ elf_err_t elf_check_magic (elf_t * elf)
            ELF_SUCCESS : ELF_INVALID;
 }
 
-

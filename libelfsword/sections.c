@@ -25,7 +25,6 @@
 #include <stdbool.h>
 
 #include <elfsword.h>
-#include "algorithms.h"
 
 /* ------ Basic section access routines ------------------------------- */
 
@@ -138,32 +137,12 @@ void elf_sect_iter_free (diter_t *iter)
 
 /* ------ Optimization with hash tables ------------------------------- */
 
-static inline
-void fill_hash (elf_t *elf, dhash_t *table)
-{
-    const char *map = elf_sect_name(elf, NULL); 
-    diter_t *iter = elf_sect_iter_new(elf, SHT_NULL);
-    while (diter_hasnext(iter)) {
-        Elf32_Shdr *sec = diter_next(iter);
-        const char *name = map + sec->sh_name;
-        dhash_insert(table, (void *)name, (void *)sec);
-    }
-    elf_sect_iter_free(iter);
-}
-
-elf_err_t elf_sect_get_hash (elf_t *elf, dhash_t **table)
+elf_err_t elf_sect_get_hash (elf_t *elf, const dhash_t **table)
 {
     if (elf->names == NULL) {
         return ELF_NOSECTION;       // There's no string table;
     }
-    dhash_t *secs = elf->secs;
-    if (secs == NULL) {
-        secs = dhash_new(ELF_SECHASH_SIZE, (dhash_func_t)elf_hash,
-                         (dcmp_func_t)strcmp);
-        fill_hash(elf, secs);
-        elf->secs = secs;
-    }
-    *table = secs;
+    *table = elf->secs;
     return ELF_SUCCESS;
 }
 

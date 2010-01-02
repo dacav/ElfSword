@@ -63,7 +63,7 @@ void elf_sect_iter_free (diter_t *iter);
  * @return ELF_SUCCESS if there's the string table, ELF_NOSECTION 
  *         otherwise.
  */
-elf_err_t elf_sect_get_hash (elf_t *elf, dhash_t **table);
+elf_err_t elf_sect_get_hash (elf_t *elf, const dhash_t **table);
 
 /** Get the required section header
  *

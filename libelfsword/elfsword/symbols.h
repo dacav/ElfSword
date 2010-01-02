@@ -43,15 +43,20 @@ const char *elf_symb_name (elf_t *elf, elf_symb_desc_t *desc);
 
 /** Build a libdacav iterator on symbols.
  *
+ * Only SHT_NULL, SHT_SYMTAB and SHT_DYNSYM make sense as second
+ * parameter. If SHT_NULL is provided every symbol will be considered. If
+ * SHT_SYMTAB or SHT_DYNSYM is provided only .symtab and .dynsym symbols
+ * will be considered respectively.
+ *
  * The diter_next function will return a pointer to a descriptor from
  * which derive the symbol name and the symbol header.
  *
- * @see 
- *
+ * @param sh_type The section type corresponding to the kind of symbols to
+ *                iterate on;
  * @param elf The ELF object descriptor;
  * @return An iterator among ELF object's symbols.
  */
-diter_t *elf_symb_iter_new (elf_t *elf);
+diter_t *elf_symb_iter_new (elf_t *elf, Elf32_Word sh_type);
 
 /** Free the given symbols iterator.
  *

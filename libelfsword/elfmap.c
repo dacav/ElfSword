@@ -31,7 +31,7 @@
 
 #include <dacav.h>
 #include <elfsword.h>
-
+#include "algorithms.h"
 
 void elf_release_file (elf_t * elf)
 {
@@ -43,7 +43,7 @@ void elf_release_file (elf_t * elf)
     if (elf->fd != -1) {
         close(elf->fd);
     }
-    if (elf->secs) {
+    if (elf->secs != NULL) {
         dhash_free(elf->secs, NULL, NULL);
     }
     free(elf);
@@ -61,6 +61,33 @@ Elf32_Shdr *seek_strtab_section (elf_t *elf)
            ret : NULL;
 }
 
+static inline
+void init_sections (elf_t *elf, dhash_t *table,
+                    Elf32_Shdr **symtab, Elf32_Shdr **dynsym)
+{
+    const char *map;
+    if (table != NULL) {
+        map = elf_sect_name(elf, NULL); 
+    }
+    diter_t *iter = elf_sect_iter_new(elf, SHT_NULL);
+    while (diter_hasnext(iter)) {
+        Elf32_Shdr *sec = diter_next(iter);
+        if (table != NULL) {
+            const char *name = map + sec->sh_name;
+            dhash_insert(table, (void *)name, (void *)sec);
+        }
+        switch (sec->sh_type) {
+            case SHT_SYMTAB:
+                elf->symtab = sec;
+                break;
+            case SHT_DYNSYM:
+                elf->dynsym = sec;
+                break;
+        }
+    }
+    elf_sect_iter_free(iter);
+}
+
 elf_err_t elf_map_file (const char *filename, elf_t **elf)
 {
     int fd;
@@ -70,8 +97,8 @@ elf_err_t elf_map_file (const char *filename, elf_t **elf)
     elf_t *ret;
 
     /* Control structure allocation */
-    assert(ret = malloc(sizeof(elf_t)));
-    memset((void *)elf, 0, sizeof(elf_t));
+    assert(ret = malloc(sizeof(elf_t))); memset((void *)elf, 0,
+           sizeof(elf_t));
 
     /* File mapping */
     ret->fd = fd = open(filename, O_RDONLY);
@@ -86,7 +113,18 @@ elf_err_t elf_map_file (const char *filename, elf_t **elf)
         return ELF_MAPPING;
     }
     ret->file.data = data;
-    ret->names = seek_strtab_section(ret);
+    Elf32_Shdr *names = ret->names = seek_strtab_section(ret);
+
+    dhash_t *secs;
+    if (names != NULL) {
+        secs = dhash_new(ELF_SECHASH_SIZE, (dhash_func_t) elf_hash,
+                         (dcmp_func_t) strcmp);
+    } else {
+        secs = NULL;
+    }
+    init_sections(ret, secs, &ret->symtab, &ret->dynsym);
+    ret->secs = secs;
+ 
     *elf = ret;
     return ELF_SUCCESS;
 };

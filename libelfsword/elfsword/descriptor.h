@@ -30,7 +30,6 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <elf.h>
-
 #include <dacav.h>
 
 /** ELF mapping type */
@@ -46,6 +45,8 @@ typedef struct {
 
     Elf32_Shdr *names;          /**< Pointer to the name section */
     dhash_t *secs;              /**< Sections hash by name; */
+    Elf32_Shdr *dynsym;         /**< Dynamic symbols table */
+    Elf32_Shdr *symtab;         /**< Standard symbols table */
 
 } elf_t;
 

@@ -22,6 +22,7 @@
 #include <dacav.h>
 #include <elfsword.h>
 #include <stdint.h>
+#include <string.h>
 
 #include <stdio.h>
 
@@ -52,9 +53,9 @@ const char *elf_symb_name (elf_t *elf, elf_symb_desc_t *desc)
 
 struct iterable {
     elf_t *elf;
-    diter_t *sec_iter;
     uint8_t *cursor;
     uint8_t *end;
+    Elf32_Shdr *symtabs[2];     // we have at most two symbol tabs.
     elf_symb_desc_t outdesc;
 };
 
@@ -71,40 +72,50 @@ void *iter_next (struct iterable *it)
 static
 int iter_hasnext (struct iterable *it)
 {
-    Elf32_Shdr *next;
-    size_t size;
     uint8_t *cursor = it->cursor;
-    diter_t *sec_iter = it->sec_iter;
 
     if (cursor == NULL || cursor >= it->end) {
-        while (diter_hasnext(sec_iter)) {
-            next = (Elf32_Shdr *) diter_next(sec_iter);
-            if (elf_sect_content(it->elf, next, &cursor, &size)
-                    == ELF_NOSECTION) {
-                // nobits, no content. This should never happen, anyway.
-                continue;
-            }
-            printf("Jukebox call\n");
-            it->cursor = cursor;        // begin of the section;
-            it->end = cursor + size;    // end of the section;
-            it->outdesc.shdr = next;    // current section header;
-            return 1;   // continue with next section.
+
+        // Check if there's at least one symbol table available:
+        Elf32_Shdr *next = it->symtabs[0];
+        if (next != NULL) {
+            it->symtabs[0] = NULL;  // Section 0 consumed.
+        } else if ((next = it->symtabs[1]) == NULL) {
+            return 0;               // No more sections.
+        } else {
+            it->symtabs[1] = NULL;      // Section 1 consumed.
         }
-        printf("End of sections having symbols\n");
-        return 0;   // all sections have been checked.
+
+        size_t size;
+        if (elf_sect_content(it->elf, next, &cursor, &size)
+                == ELF_NOSECTION) {
+            // nobits, no content. This should never happen anyway.
+            // ...well, if the ELF file is sane, at least.
+            return 0;
+        }
+        it->cursor = cursor;        // begin of the section;
+        it->end = cursor + size;    // end of the section;
+        it->outdesc.shdr = next;    // current section header;
     }
     return 1;   // there's still something in this section.
 }
 
-diter_t *elf_symb_iter_new (elf_t *elf)
+diter_t *elf_symb_iter_new (elf_t *elf, Elf32_Word sh_type)
 {
     diter_t *ret = diter_new((dnext_t)iter_next, (dhasnext_t)iter_hasnext,
                              NULL, NULL, sizeof(struct iterable));
 
     struct iterable *it = (struct iterable *) diter_get_iterable(ret);
-
-    // Selecting symtab sections.
-    it->sec_iter = elf_sect_iter_new(elf, SHT_SYMTAB);
+    memset((void *)it->symtabs, NULL, sizeof(Elf32_Shdr *) * 2);
+    switch (sh_type) {
+        case SHT_SYMTAB:
+            it->symtabs[0] = elf->symtab;
+            break;
+        case SHT_NULL:  // Optimized code.
+            it->symtabs[0] = elf->symtab;
+        case SHT_DYNSYM:
+            it->symtabs[1] = elf->dynsym;
+    }
     it->cursor = NULL;
     it->elf = elf;
 
