@@ -46,5 +46,6 @@ int main (int argc, char **argv)
      * contexts.
      */
     assert(n == 4);
+    elf_release_file(descr);
     exit(0);
 }
