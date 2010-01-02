@@ -137,12 +137,12 @@ void elf_sect_iter_free (diter_t *iter)
 
 /* ------ Optimization with hash tables ------------------------------- */
 
-elf_err_t elf_sect_get_hash (elf_t *elf, const dhash_t **table)
+elf_err_t elf_sect_get (elf_t *elf, const char *name, Elf32_Shdr **sec)
 {
     if (elf->names == NULL) {
         return ELF_NOSECTION;       // There's no string table;
     }
-    *table = elf->secs;
-    return ELF_SUCCESS;
+    return dhash_search(elf->secs, (void *) name, (void **) sec)
+           == SHASH_NOTFOUND ? ELF_NOSECTION : ELF_SUCCESS;
 }
 

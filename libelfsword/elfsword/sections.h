@@ -38,7 +38,8 @@ extern "C" {
 /** Build a libdacav iterator on sections.
  *
  * Iteration will be achieved only among sections whose type matches the
- * one given as second parameter.
+ * one given as second parameter. The diter_next function will return an
+ * address of Elf32_Shdr structure.
  *
  * @param elf The ELF object descriptor;
  * @param sh_type Matching type: by providing SHT_NULL filtering will be
@@ -53,17 +54,22 @@ diter_t *elf_sect_iter_new (elf_t *elf, Elf32_Word sh_type);
  */
 void elf_sect_iter_free (diter_t *iter);
 
-/** Get the hash table for section names.
+/** Get a section descriptor by specifying its name.
  *
- * The retrieved pointer (second parameter) makes sense only if
+ * The retrieved pointer (last parameter) makes sense only if
  * ELF_SUCCESS is returned.
  *
+ * @warning A string table for the ELF file is not considered mandatory by
+ *          the specification, therefore this function may always return
+ *          ELF_NOSECTION.
+ *
  * @param elf The ELF object descriptor.
- * @param table A pointer where the hash table address will be stored;
+ * @param name The name to search (a null-terminated string);
+ * @param sec The address of a section header pointer;
  * @return ELF_SUCCESS if there's the string table, ELF_NOSECTION 
  *         otherwise.
  */
-elf_err_t elf_sect_get_hash (elf_t *elf, const dhash_t **table);
+elf_err_t elf_sect_get (elf_t *elf, const char *name, Elf32_Shdr **sec);
 
 /** Get the required section header
  *
