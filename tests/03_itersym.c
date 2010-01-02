@@ -12,9 +12,10 @@ int main (int argc, char **argv)
 
     diter_t *iter;
     iter = elf_symb_iter_new(elf, SHT_NULL);
+    printf("Printout of symbols\n");
     while (diter_hasnext(iter)) {
         elf_symb_desc_t *descr = (elf_symb_desc_t *) diter_next(iter);
-        printf("Symbol name: '%s'\n", elf_symb_name(elf, descr));
+        printf("\tSymbol name: '%s'\n", elf_symb_name(elf, descr));
     }
     elf_symb_iter_free(iter);
     elf_release_file(elf);

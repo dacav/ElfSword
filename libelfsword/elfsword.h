@@ -4,3 +4,4 @@
 #include <elfsword/sections.h>
 #include <elfsword/check.h>
 #include <elfsword/symbols.h>
+#include <elfsword/proghead.h>
