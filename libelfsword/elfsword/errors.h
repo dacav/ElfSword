@@ -37,7 +37,9 @@ typedef enum {
     ELF_MAPPING = 2,    /**< Unable to map the file. */
     ELF_INVALID = 3,    /**< Invalid ELF object. */
     ELF_NOSECTION = 4,  /**< Section unavailable */
-    ELF_NODATA = 5      /**< Data unavailable */
+    ELF_NODATA = 5,     /**< Data unavailable */
+    ELF_NOSYMBOL = 6,   /**< Symbol unavailable */
+    ELF_WRONGPARAM = 7  /**< Invalid parameter */
 } elf_err_t;
 
 /** Returns a NULL-terminated string describing the returned error

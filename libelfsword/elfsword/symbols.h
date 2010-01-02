@@ -26,11 +26,30 @@
 #ifndef __defined_elfsword_symbols_h
 #define __defined_elfsword_symbols_h
 
-/** Opaque type describing a symbol.
+/** Symbol descriptor.
  *
- * This is an internal wrapper for the Elf32_Sym data type.
+ * @see elf_symb_seek;
+ * @see elf_symb_name;
  */
-typedef struct symbol_desc elf_symb_desc_t;
+typedef struct {
+    Elf32_Sym *yhdr;    /**< The symbol header */
+    Elf32_Shdr *shdr;   /**< The section in which yhdr is stored */
+} elf_symb_desc_t;
+
+/** Retrieve a symbol descriptor.
+ *
+ * The retrieved pointer (last parameter) makes sense only if
+ * ELF_SUCCESS is returned.
+ *
+ * @param elf The ELF object descriptor;
+ * @param sh_type The section type corresponding to the kind of symbols to
+ *                seek;
+ * @param index The index of the required symbol;
+ * @param desc The retrieved symbol descriptor.
+ * @return 
+ */
+elf_err_t elf_symb_seek (elf_t *elf, Elf32_Word sh_type, unsigned index,
+                         elf_symb_desc_t *desc);
 
 /** Get the required symbol name.
  *
@@ -48,7 +67,7 @@ const char *elf_symb_name (elf_t *elf, elf_symb_desc_t *desc);
  * SHT_SYMTAB or SHT_DYNSYM is provided only .symtab and .dynsym symbols
  * will be considered respectively.
  *
- * The diter_next function will return a pointer to a descriptor from
+ * The diter_next function will return a the address of a descriptor from
  * which derive the symbol name and the symbol header.
  *
  * @param sh_type The section type corresponding to the kind of symbols to

@@ -28,11 +28,6 @@
 
 /* ------ Basic symbols access routines ------------------------------- */
 
-struct symbol_desc {
-    Elf32_Sym *yhdr;    // The symbol header;
-    Elf32_Shdr *shdr;   // The symbol belongs to this section.
-};
-
 const char *elf_symb_name (elf_t *elf, elf_symb_desc_t *desc)
 {
     const Elf32_Ehdr *header = elf->file.header;
@@ -47,6 +42,36 @@ const char *elf_symb_name (elf_t *elf, elf_symb_desc_t *desc)
     shdr = (Elf32_Shdr *) ((elf->file.data8b + header->e_shoff)
                            + (header->e_shentsize * shdr->sh_link));
     return (const char *)elf->file.data + shdr->sh_offset + st_name;
+}
+
+elf_err_t elf_symb_seek (elf_t *elf, Elf32_Word sh_type, unsigned index,
+                         elf_symb_desc_t *desc)
+{
+    Elf32_Shdr *select;
+    switch (sh_type) {
+        case SHT_DYNSYM:
+            select = elf->dynsym;
+            break;
+        case SHT_SYMTAB:
+            select = elf->symtab;
+            break;
+        default:
+            return ELF_WRONGPARAM;
+    }
+
+    size_t size;
+    uint8_t *start;
+    Elf32_Sym *sym;
+    if (elf_sect_content(elf, select, &start, &size) != ELF_SUCCESS) {
+        return ELF_INVALID;
+    }
+    sym = (Elf32_Sym *) start + index;
+    if ((uint8_t *)sym > start + size) {
+        return ELF_NOSYMBOL;
+    }
+    desc->yhdr = sym;
+    desc->shdr = select;
+    return ELF_SUCCESS;
 }
 
 /* ------ Iterators among symbols -------------------------------------- */

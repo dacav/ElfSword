@@ -3,7 +3,8 @@ AM_LDFLAGS = -L$(top_srcdir)/libelfsword/
 LDADD = -ldacav -lelfsword
 
 check_PROGRAMS = 00_allocate 01_itersections 02_itersechash \
-                 03_itersym 04_itersecfilter 05_itersym2
+                 03_itersym 04_itersecfilter 05_itersym2 \
+                 06_itersym3
 
 TESTS = $(check_PROGRAMS)
 
@@ -13,3 +14,4 @@ TESTS = $(check_PROGRAMS)
 03_itersym_SOURCES = 03_itersym.c
 04_itersecfilter_SOURCES = 04_itersecfilter.c
 05_itersym2_SOURCES = 05_itersym2.c
+06_itersym3_SOURCES = 06_itersym3.c
