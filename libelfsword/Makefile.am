@@ -7,11 +7,13 @@ lib_LIBRARIES = libelfsword.a
 includetreedir = $(prefix)/include/elfsword
 includetree_HEADERS = elfsword/elfmap.h elfsword/errors.h \
                       elfsword/check.h elfsword/sections.h \
-                      elfsword/symbols.h elfsword/proghead.h
+                      elfsword/symbols.h elfsword/proghead.h \
+                      elfsword/statrel.h
 include_HEADERS = elfsword.h
 
 libelfsword_a_SOURCES = $(include_HEADERS) \
                         $(includetree_HEADERS) \
                         algorithms.h descriptor.h algorithms.c check.c \
-                        elfmap.c sections.c symbols.c proghead.c
+                        elfmap.c sections.c symbols.c proghead.c \
+                        statrel.c
 

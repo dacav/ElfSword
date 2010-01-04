@@ -21,6 +21,8 @@
 #include <elf.h>
 #include <dacav.h>
 #include <assert.h>
+#include <elfsword.h>
+#include <string.h>
 
 /** Static relocation related data */
 struct statrel {
@@ -62,35 +64,41 @@ static
 int iter_hasnext (struct iterable *it)
 {
     size_t size = it->size;
-    void *content;
     if (size >= it->step)
         return 1;   // Section not consumed yet;
+
     diter_t *iter = it->sects_iter;
     Elf32_Shdr *contsec;
+    elf_t *elf = it->statrel.elf;
+    Elf32_Word sh_type;
+
+    // Jump to next SHT_REL or SHT_RELA section
     do {
         if (!diter_hasnext(iter))
             return 0;   // No more stuff;
-        contsec = (Elf32_Shdr *) diter_next(iter)
-    } while (elf_sect_content(it->elf, contsec, &it->secdata,
-                              &size) != ELF_SUCCESS);
+        contsec = (Elf32_Shdr *) diter_next(iter);
+        sh_type = contsec->sh_type;
+    } while (sh_type != SHT_REL && sh_type != SHT_RELA
+             && elf_sect_content(elf, contsec, &(it->secdata), &size) !=
+             ELF_SUCCESS);
+
     it->size = size;
+    it->step = sh_type == SHT_REL ? sizeof(Elf32_Rel) :
+                                    sizeof(Elf32_Rela);
     it->statrel.contsec = contsec;
+    it->statrel.sh_type = sh_type;
+    return 1;
 }
 
-diter_t *elf_statrel_iter_new (elf_t *elf, Elf32_Word sh_type)
+diter_t *elf_statrel_iter_new (elf_t *elf)
 {
-    assert(sh_type == SHT_REL || sh_type == SHT_RELA);
-
     diter_t *ret = diter_new((dnext_t)iter_next, (dhasnext_t)iter_hasnext,
                              NULL, NULL, sizeof(struct iterable));
 
     struct iterable *it = (struct iterable *) diter_get_iterable(ret);
     it->statrel.elf = elf;
-    it->statrel.sh_type = sh_type;
-    it->sects_iter = elf_sect_iter_new(elf, sh_type);
+    it->sects_iter = elf_sect_iter_new(elf, SHT_NULL);
     it->size = 0;
-    it->step = sh_type == SHT_REL ? sizeof(Elf32_Rel) :
-                                    sizeof(Elf32_Rela);
 
     return ret;
 }
@@ -103,7 +111,7 @@ void elf_statrel_iter_free (diter_t *iter)
 elf_err_t elf_statrel_symtab (elf_statrel_t *desc, Elf32_Shdr **sec)
 {
     Elf32_Shdr *contsec = desc->contsec;
-    if (elf_section_seek(desc->elf, contsec->sh_link, sec)
+    if (elf_sect_seek(desc->elf, contsec->sh_link, sec)
             == ELF_NOSECTION)
         return ELF_INVALID;
     return ELF_SUCCESS;
@@ -112,9 +120,29 @@ elf_err_t elf_statrel_symtab (elf_statrel_t *desc, Elf32_Shdr **sec)
 elf_err_t elf_statrel_target (elf_statrel_t *desc, Elf32_Shdr **sec)
 {
     Elf32_Shdr *contsec = desc->contsec;
-    if (elf_section_seek(desc->elf, contsec->sh_info, sec)
+    if (elf_sect_seek(desc->elf, contsec->sh_info, sec)
             == ELF_NOSECTION)
         return ELF_INVALID;
     return ELF_SUCCESS;
 }
 
+void elf_statrel_info (elf_statrel_t *desc, Elf32_Rela *rela)
+{
+    if (desc->sh_type == SHT_RELA) {
+        memcpy(rela, desc->data.rela, sizeof(Elf32_Rela));
+    } else {
+        rela->r_offset = desc->data.rel->r_offset;
+        rela->r_info = desc->data.rel->r_info;
+        rela->r_addend = 0;
+    }
+}
+
+elf_err_t elf_statrel_symbol (elf_statrel_t *desc, elf_symb_desc_t *symb)
+{
+    Elf32_Shdr *symtab;
+    if (elf_statrel_symtab(desc, &symtab) == ELF_INVALID)
+        return ELF_INVALID;
+    Elf32_Addr offset = ELF32_R_SYM(desc->data.rel->r_info);
+    return elf_symb_seek(desc->elf, symtab->sh_type, offset, symb)
+           == ELF_SUCCESS ? ELF_SUCCESS : ELF_INVALID;
+}

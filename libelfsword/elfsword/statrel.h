@@ -41,9 +41,12 @@ extern "C" {
  */
 typedef struct statrel elf_statrel_t;
 
-/** Getter for the symbol table associated to a static relocation entry
+/** Getter for the symbol table associated to a static relocation entry.
  *
- * The retrieved pointer (second parameter) makes sense only if
+ * This isn't the most straightforward way to obtain information about the
+ * symbol. If you need a symbol descriptor use elf_statrel_symbol instead.
+ *
+ * The retrieved pointer (last parameter) makes sense only if
  * ELF_SUCCESS is returned.
  *
  * @param desc The descriptor of the relocation entry;
@@ -52,6 +55,18 @@ typedef struct statrel elf_statrel_t;
  *         with the ELF object.
  */
 elf_err_t elf_statrel_symtab (elf_statrel_t *desc, Elf32_Shdr **sec);
+
+/** Getter for the symbol associated to a static relocation entry
+ *
+ * The retrieved pointer (last parameter) makes sense only if
+ * ELF_SUCCESS is returned.
+ *
+ * @param desc The descriptor of the relocation entry;
+ * @param desc The retrieved symbol descriptor.
+ * @return ELF_SUCCESS on success, ELF_INVALID if there's something wrong
+ *         with the ELF object.
+ */
+elf_err_t elf_statrel_symbol (elf_statrel_t *desc, elf_symb_desc_t *symb)
 
 /** Getter for the target section associated to a static relocation entry
  *
@@ -65,6 +80,19 @@ elf_err_t elf_statrel_symtab (elf_statrel_t *desc, Elf32_Shdr **sec);
  */
 elf_err_t elf_statrel_target (elf_statrel_t *desc, Elf32_Shdr **sec);
 
+/** Getter for the static relocation entry content.
+ *
+ * This function treats the relocation entry provided by desc as a
+ * Elf32_Rela entry (i.e. as the section were of type ST_RELA).
+ *
+ * If the section type is ST_REL, then the rela::r_addend field is
+ * set to 0.
+ *
+ * @param desc The descriptor of relocation entry;
+ * @param rela Storage address for relocation entry data.
+ */
+void elf_statrel_info (elf_statrel_t *desc, Elf32_Rela *rela);
+
 /** Build a libdacav iterator on static relocation entries.
  *
  * The diter_next function will return a the address of a descriptor from
@@ -73,11 +101,9 @@ elf_err_t elf_statrel_target (elf_statrel_t *desc, Elf32_Shdr **sec);
  * @see elf_statrel_t;
  *
  * @param elf The ELF object descriptor;
- * @param sh_type The section type corresponding to the kind of symbols to
- *                seek (SHT_REL or SHT_RELA);
  * @return An iterator among ELF object's static relocation entries.
  */
-diter_t *elf_statrel_iter_new (elf_t *elf, Elf32_Word sh_type);
+diter_t *elf_statrel_iter_new (elf_t *elf);
 
 /** Free the given sections iterator.
  *
