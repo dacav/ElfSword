@@ -58,7 +58,10 @@ typedef struct {
  *                seek (SHT_SYMTAB or SHT_DYNSYM);
  * @param index The index of the required symbol;
  * @param desc The retrieved symbol descriptor.
- * @return 
+ * @return ELF_SUCCESS on success; ELF_NOSYMBOL if the given index is
+ *         greater than the number of elements in the symbol table;
+ *         ELF_INVALID if the file is not well formed (this should never
+ *         happen).
  */
 elf_err_t elf_symb_seek (elf_t *elf, Elf32_Word sh_type, unsigned index,
                          elf_symb_desc_t *desc);
