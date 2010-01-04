@@ -41,6 +41,13 @@ extern "C" {
  */
 typedef struct statrel elf_statrel_t;
 
+/** Getter for the section holding the static relocation entry.
+ *
+ * @param desc The descriptor of the relocation entry;
+ * @param sec The address of a section header pointer;
+ */
+void elf_statrel_section (elf_statrel_t *desc, Elf32_Shdr **sec);
+
 /** Getter for the symbol table associated to a static relocation entry.
  *
  * This isn't the most straightforward way to obtain information about the
@@ -66,7 +73,7 @@ elf_err_t elf_statrel_symtab (elf_statrel_t *desc, Elf32_Shdr **sec);
  * @return ELF_SUCCESS on success, ELF_INVALID if there's something wrong
  *         with the ELF object.
  */
-elf_err_t elf_statrel_symbol (elf_statrel_t *desc, elf_symb_desc_t *symb)
+elf_err_t elf_statrel_symbol (elf_statrel_t *desc, elf_symb_desc_t *symb); 
 
 /** Getter for the target section associated to a static relocation entry
  *
@@ -91,7 +98,7 @@ elf_err_t elf_statrel_target (elf_statrel_t *desc, Elf32_Shdr **sec);
  * @param desc The descriptor of relocation entry;
  * @param rela Storage address for relocation entry data.
  */
-void elf_statrel_info (elf_statrel_t *desc, Elf32_Rela *rela);
+void elf_statrel_rela (elf_statrel_t *desc, Elf32_Rela *rela);
 
 /** Build a libdacav iterator on static relocation entries.
  *

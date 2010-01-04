@@ -54,6 +54,22 @@ typedef struct {
 
 } elf_t;
 
+/** Symbol descriptor.
+ *
+ * This structure is not declared as opaque since must be instantiated by
+ * any function using the elf_symb_seek function. A pointer to this
+ * function is also returned by symbols iterators.
+ *
+ * @see elf_symb_iter_new;
+ * @see elf_symb_seek;
+ * @see elf_symb_name;
+ */
+typedef struct {
+    Elf32_Sym *yhdr;    /**< The symbol header */
+    Elf32_Shdr *shdr;   /**< The section in which elf_symb_desc_t::yhdr is
+                         *   stored */
+} elf_symb_desc_t;
+
 #ifdef __cplusplus
 }
 #endif

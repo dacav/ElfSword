@@ -23,7 +23,7 @@ LDADD = -ldacav -lelfsword
 
 check_PROGRAMS = 00_allocate 01_itersections 02_secchecknames \
                  03_itersym 04_itersecfilter 05_itersym2 \
-                 06_itersym3 07_proghead
+                 06_itersym3 07_proghead 08_staticreloc
 
 TESTS = $(check_PROGRAMS)
 
@@ -35,3 +35,4 @@ TESTS = $(check_PROGRAMS)
 05_itersym2_SOURCES = 05_itersym2.c
 06_itersym3_SOURCES = 06_itersym3.c
 07_proghead_SOURCES = 07_proghead.c
+08_staticreloc_SOURCES = 08_staticreloc.c

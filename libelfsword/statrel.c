@@ -47,6 +47,8 @@ struct iterable {
     void *secdata;
 };
 
+#include <stdio.h>
+
 static
 void *iter_next (struct iterable *it)
 {
@@ -74,12 +76,13 @@ int iter_hasnext (struct iterable *it)
 
     // Jump to next SHT_REL or SHT_RELA section
     do {
-        if (!diter_hasnext(iter))
+        if (!diter_hasnext(iter)) {
             return 0;   // No more stuff;
+        }
         contsec = (Elf32_Shdr *) diter_next(iter);
         sh_type = contsec->sh_type;
-    } while (sh_type != SHT_REL && sh_type != SHT_RELA
-             && elf_sect_content(elf, contsec, &(it->secdata), &size) !=
+    } while ((sh_type != SHT_REL && sh_type != SHT_RELA)
+             || elf_sect_content(elf, contsec, &(it->secdata), &size) !=
              ELF_SUCCESS);
 
     it->size = size;
@@ -99,6 +102,7 @@ diter_t *elf_statrel_iter_new (elf_t *elf)
     it->statrel.elf = elf;
     it->sects_iter = elf_sect_iter_new(elf, SHT_NULL);
     it->size = 0;
+    it->step = sizeof(Elf32_Rela);  // dummy step for the first hasnext 
 
     return ret;
 }
@@ -119,14 +123,14 @@ elf_err_t elf_statrel_symtab (elf_statrel_t *desc, Elf32_Shdr **sec)
 
 elf_err_t elf_statrel_target (elf_statrel_t *desc, Elf32_Shdr **sec)
 {
-    Elf32_Shdr *contsec = desc->contsec;
-    if (elf_sect_seek(desc->elf, contsec->sh_info, sec)
-            == ELF_NOSECTION)
+    if (elf_sect_seek(desc->elf, desc->contsec->sh_info, sec)
+            == ELF_NOSECTION) {
         return ELF_INVALID;
+    }
     return ELF_SUCCESS;
 }
 
-void elf_statrel_info (elf_statrel_t *desc, Elf32_Rela *rela)
+void elf_statrel_rela (elf_statrel_t *desc, Elf32_Rela *rela)
 {
     if (desc->sh_type == SHT_RELA) {
         memcpy(rela, desc->data.rela, sizeof(Elf32_Rela));
@@ -145,4 +149,9 @@ elf_err_t elf_statrel_symbol (elf_statrel_t *desc, elf_symb_desc_t *symb)
     Elf32_Addr offset = ELF32_R_SYM(desc->data.rel->r_info);
     return elf_symb_seek(desc->elf, symtab->sh_type, offset, symb)
            == ELF_SUCCESS ? ELF_SUCCESS : ELF_INVALID;
+}
+
+void elf_statrel_section (elf_statrel_t *desc, Elf32_Shdr **sec)
+{
+    *sec = desc->contsec;
 }
