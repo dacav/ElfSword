@@ -108,7 +108,7 @@ const char *elf_sect_name (elf_t *elf, Elf32_Shdr *sec);
  *         section type is SHT_NOBITS.
  */
 elf_err_t elf_sect_content (elf_t *elf, Elf32_Shdr *sec,
-                            uint8_t **content, size_t *size);
+                            void **content, size_t *size);
 
 #ifdef __cplusplus
 }

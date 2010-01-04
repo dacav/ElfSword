@@ -29,7 +29,7 @@
 /* ------ Basic section access routines ------------------------------- */
 
 elf_err_t elf_sect_content (elf_t *elf, Elf32_Shdr *sec,
-                            uint8_t **content, size_t *size)
+                            void **content, size_t *size)
 {
     if (sec->sh_type == SHT_NOBITS)
         return ELF_NOSECTION;

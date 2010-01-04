@@ -62,7 +62,8 @@ elf_err_t elf_symb_seek (elf_t *elf, Elf32_Word sh_type, unsigned index,
     size_t size;
     uint8_t *start;
     Elf32_Sym *sym;
-    if (elf_sect_content(elf, select, &start, &size) != ELF_SUCCESS) {
+    if (elf_sect_content(elf, select, (void **)&start, &size) !=
+            ELF_SUCCESS) {
         return ELF_INVALID;
     }
     sym = (Elf32_Sym *) start + index;
@@ -112,7 +113,7 @@ int iter_hasnext (struct iterable *it)
         }
 
         size_t size;
-        if (elf_sect_content(it->elf, next, &cursor, &size)
+        if (elf_sect_content(it->elf, next, (void **)&cursor, &size)
                 == ELF_NOSECTION) {
             // nobits, no content. This should never happen anyway.
             // ...well, if the ELF file is sane, at least.
