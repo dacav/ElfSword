@@ -32,6 +32,10 @@
 #include <elf.h>
 #include <dacav.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /** ELF mapping type */
 typedef struct {
 
@@ -49,5 +53,9 @@ typedef struct {
     Elf32_Shdr *symtab;         /**< Standard symbols table */
 
 } elf_t;
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif // __defined_elfsword_descriptor_h

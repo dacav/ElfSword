@@ -26,14 +26,26 @@
 #ifndef __defined_elfsword_symbols_h
 #define __defined_elfsword_symbols_h
 
+#include <elfsword.h>
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /** Symbol descriptor.
  *
+ * This structure is not declared as opaque since must be instantiated by
+ * any function using the elf_symb_seek function. A pointer to this
+ * function is also returned by symbols iterators.
+ *
+ * @see elf_symb_iter_new;
  * @see elf_symb_seek;
  * @see elf_symb_name;
  */
 typedef struct {
     Elf32_Sym *yhdr;    /**< The symbol header */
-    Elf32_Shdr *shdr;   /**< The section in which yhdr is stored */
+    Elf32_Shdr *shdr;   /**< The section in which elf_symb_desc_t::yhdr is
+                         *   stored */
 } elf_symb_desc_t;
 
 /** Retrieve a symbol descriptor.
@@ -43,7 +55,7 @@ typedef struct {
  *
  * @param elf The ELF object descriptor;
  * @param sh_type The section type corresponding to the kind of symbols to
- *                seek;
+ *                seek (SHT_SYMTAB or SHT_DYNSYM);
  * @param index The index of the required symbol;
  * @param desc The retrieved symbol descriptor.
  * @return 
@@ -70,6 +82,8 @@ const char *elf_symb_name (elf_t *elf, elf_symb_desc_t *desc);
  * The diter_next function will return a the address of a descriptor from
  * which derive the symbol name and the symbol header.
  *
+ * @see elf_symb_desc_t;
+ *
  * @param sh_type The section type corresponding to the kind of symbols to
  *                iterate on;
  * @param elf The ELF object descriptor;
@@ -82,5 +96,9 @@ diter_t *elf_symb_iter_new (elf_t *elf, Elf32_Word sh_type);
  * @param iter The iterator to be freed.
  */
 void elf_symb_iter_free (diter_t *iter);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif // __defined_elfsword_symbols_h
