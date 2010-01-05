@@ -47,8 +47,6 @@ struct iterable {
     void *secdata;
 };
 
-#include <stdio.h>
-
 static
 void *iter_next (struct iterable *it)
 {
