@@ -83,6 +83,9 @@ void init_sections (elf_t *elf, dhash_t *table,
             case SHT_DYNSYM:
                 elf->dynsym = sec;
                 break;
+            case SHT_DYNAMIC:
+                elf->dynamic = sec;
+                break;
         }
     }
     elf_sect_iter_free(iter);
@@ -97,8 +100,8 @@ elf_err_t elf_map_file (const char *filename, elf_t **elf)
     elf_t *ret;
 
     /* Control structure allocation */
-    assert(ret = malloc(sizeof(elf_t))); memset((void *)elf, 0,
-           sizeof(elf_t));
+    assert(ret = malloc(sizeof(elf_t)));
+    memset((void *)elf, 0, sizeof(elf_t));
 
     /* File mapping */
     ret->fd = fd = open(filename, O_RDONLY);

@@ -6,3 +6,4 @@
 #include <elfsword/symbols.h>
 #include <elfsword/statrel.h>
 #include <elfsword/proghead.h>
+#include <elfsword/dynrel.h>
