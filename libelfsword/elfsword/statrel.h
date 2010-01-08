@@ -69,7 +69,7 @@ elf_err_t elf_statrel_symtab (elf_statrel_t *desc, Elf32_Shdr **sec);
  * ELF_SUCCESS is returned.
  *
  * @param desc The descriptor of the relocation entry;
- * @param desc The retrieved symbol descriptor.
+ * @param symb The retrieved symbol descriptor.
  * @return ELF_SUCCESS on success, ELF_INVALID if there's something wrong
  *         with the ELF object.
  */

@@ -32,8 +32,8 @@
 extern "C" {
 #endif
 
-#define ELF_SYMHASH_SIZE 40
-#define ELF_SECHASH_SIZE 20
+/** @addtogroup ElfSections */
+/*@{*/
 
 /** Build a libdacav iterator on sections.
  *
@@ -109,6 +109,8 @@ const char *elf_sect_name (elf_t *elf, Elf32_Shdr *sec);
  */
 elf_err_t elf_sect_content (elf_t *elf, Elf32_Shdr *sec,
                             void **content, size_t *size);
+
+/*@}*/
 
 #ifdef __cplusplus
 }

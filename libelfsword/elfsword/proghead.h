@@ -38,8 +38,6 @@ extern "C" {
  * structure.
  *
  * @param elf The ELF object descriptor;
- * @param sh_type Matching type: by providing SHT_NULL filtering will be
- *                disabled;
  * @return An iterator among ELF object's proghead.
  */
 diter_t *elf_proghead_iter_new (elf_t *elf);

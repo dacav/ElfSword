@@ -18,7 +18,7 @@
  *
  */
 
-/** @file elf.h
+/** @file elfmap.h
  *
  * This module allows to extract pieces of information from an ELF file.
  */

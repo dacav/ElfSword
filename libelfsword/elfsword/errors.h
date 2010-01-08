@@ -30,6 +30,9 @@
 extern "C" {
 #endif
 
+/** @addtogroup ElfError */
+/*@{*/
+
 /** Status flags, used as return value. */
 typedef enum {
     ELF_SUCCESS = 0,    /**< No error. */
@@ -48,6 +51,8 @@ typedef enum {
  * @return The string describing the error.
  */
 const char * elf_error (elf_err_t err);
+
+/*@}*/
 
 #ifdef __cplusplus
 }

@@ -17,7 +17,7 @@
 # Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 # 
 
-AC_INIT([ElfSword, and ELF analysis library], [0.1],
+AC_INIT([ElfSword], [0.1],
         [Giovanni Simoni <simgidacav@gmail.com>],
         [elfsword])
 
@@ -49,5 +49,6 @@ AC_TYPE_UINT8_T
 
 AC_CONFIG_FILES([Makefile
                  libelfsword/Makefile
-                 tests/Makefile])
+                 tests/Makefile
+                 doc/Doxyfile:doc/Doxyfile.in])
 AC_OUTPUT

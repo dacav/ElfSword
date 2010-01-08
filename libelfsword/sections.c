@@ -26,6 +26,15 @@
 
 #include <elfsword.h>
 
+#ifndef ELF_SYMHASH_SIZE
+#define ELF_SYMHASH_SIZE 40
+#endif
+
+#ifndef ELF_SECHASH_SIZE
+#define ELF_SECHASH_SIZE 20
+#endif
+
+
 /* ------ Basic section access routines ------------------------------- */
 
 elf_err_t elf_sect_content (elf_t *elf, Elf32_Shdr *sec,

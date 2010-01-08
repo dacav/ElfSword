@@ -33,12 +33,17 @@
 extern "C" {
 #endif
 
+/** @addtogroup ElfCheck */
+/*@{*/
+
 /** Checks the ELF magic number to be correct
  *
  * @param elf The ELF object descriptor;
  * @return true if the object has a valid magic number, false otherwise.
  */
 elf_err_t elf_check_magic (elf_t * elf);
+
+/*@}*/
 
 #ifdef __cplusplus
 }

@@ -1,24 +1,24 @@
-/*! \file doc.h 
+/** @file doc.h 
  *
  * Documentation generation file
  */
 
-/*! \defgroup elfDefinition ELF standard definition */
-/*@{*/
-/*!     \defgroup elfTypPrimitive ELF standard primitive types */
-/*!     \defgroup elfTypComposite ELF standard composite types */
-/*@{*/
-/*!         \defgroup elfConstants ELF standard field values */
-/*@}*/
-/*!     \defgroup elfFunctions ELF standard functions */
-/*@}*/
+/** @defgroup ElfCheck Sanity checking.
+ *
+ * Functions that allows to check if the ELF file respects the
+ * specification
+ */
 
-/*! \defgroup elfAccess ELF internal data retrieving functions */
-/*@{*/
-/*!     \defgroup elfAccFile File mapping management */
-/*!     \defgroup elfAccSections Sections access */
-/*!     \defgroup elfAccSymbols Symbols access */
-/*!     \defgroup elfAccProgHead Program header access */
-/*!     \defgroup elfAccRel Relocation items access */
-/*!     \defgroup elfAccDynamic Dynamic tags access */
-/*@}*/
+/** @defgroup ElfSections Sections management
+ *
+ * Functions related to ELF sections information.
+ */
+
+/** @defgroup ElfSymbols Symbols management
+ *
+ * Functions related to ELF symbols information.
+ */
+
+/** @defgroup ElfError Error management */
+
+/** @defgroup ElfGeneral Overall functions and data structures */

@@ -32,6 +32,9 @@
 extern "C" {
 #endif
 
+/** @addtogroup ElfSymbols */
+/*@{*/
+
 /** Retrieve a symbol descriptor.
  *
  * The retrieved pointer (last parameter) makes sense only if
@@ -52,8 +55,8 @@ elf_err_t elf_symb_seek (elf_t *elf, Elf32_Word sh_type, unsigned index,
 
 /** Get the required symbol name.
  *
+ * @param elf The ELF object descriptor;
  * @param desc The symbol descriptor;
- * @param name A pointer where the string address will be stored;
  * @return The name of the given section, or the starting address of the
  *         section names table if NULL is given as second parameter.
  */
@@ -83,6 +86,8 @@ diter_t *elf_symb_iter_new (elf_t *elf, Elf32_Word sh_type);
  * @param iter The iterator to be freed.
  */
 void elf_symb_iter_free (diter_t *iter);
+
+/*@}*/
 
 #ifdef __cplusplus
 }

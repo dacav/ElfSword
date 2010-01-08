@@ -32,6 +32,9 @@
 #include <elf.h>
 #include <dacav.h>
 
+/** @addtogroup ElfGeneral */
+/*@{*/
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -41,7 +44,9 @@ typedef struct {
 
     union {
         void *data;             /**< Memory mapped file; */
-        uint8_t *data8b;        /**< 8 bit pointer; */
+        uint8_t *data8b;        /**< 8 bit pointer to the begin of the
+                                 *   file (used for pointer arithmetic);
+                                 */
         Elf32_Ehdr *header;     /**< ELF header; */
     } file;                     /**< Allocated data */
     size_t len;                 /**< File size; */
@@ -71,6 +76,8 @@ typedef struct {
     Elf32_Shdr *shdr;   /**< The section in which elf_symb_desc_t::yhdr is
                          *   stored */
 } elf_symb_desc_t;
+
+/*@}*/
 
 #ifdef __cplusplus
 }
