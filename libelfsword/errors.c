@@ -1,4 +1,4 @@
-#include <elf.h>
+#include <elfsword.h>
 
 // Index must correspond to elfsword/errors.h enumeration (elf_err_t)
 const char *errors[] = {
@@ -10,7 +10,7 @@ const char *errors[] = {
     "Data unavailable",
     "Symbol unavailable",
     "Invalid parameter"
-}
+};
 
 const char * elf_error (elf_err_t err)
 {
