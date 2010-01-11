@@ -17,6 +17,8 @@
 # Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 # 
 
+ACLOCAL_AMFLAGS = -I m4
+
 EXTRA_DIST = reconf
 SUBDIRS = libelfsword tests
 .PHONY : doc
