@@ -33,6 +33,10 @@
 #include <elfsword.h>
 #include "algorithms.h"
 
+#ifndef ELF_SECHASH_SIZE
+#define ELF_SECHASH_SIZE 20
+#endif
+
 void elf_release_file (elf_t * elf)
 {
     assert(elf != NULL);
