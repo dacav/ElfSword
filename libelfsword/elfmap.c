@@ -105,7 +105,7 @@ elf_err_t elf_map_file (const char *filename, elf_t **elf)
 
     /* Control structure allocation */
     assert(ret = malloc(sizeof(elf_t)));
-    memset((void *)elf, 0, sizeof(elf_t));
+    memset((void *)ret, 0, sizeof(elf_t));
 
     /* File mapping */
     ret->fd = fd = open(filename, O_RDONLY);
