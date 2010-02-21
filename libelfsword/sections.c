@@ -25,6 +25,7 @@
 #include <stdbool.h>
 
 #include <elfsword.h>
+#include <stdio.h>
 
 #ifndef ELF_SYMHASH_SIZE
 #define ELF_SYMHASH_SIZE 40
@@ -147,6 +148,6 @@ elf_err_t elf_sect_get (elf_t *elf, const char *name, Elf32_Shdr **sec)
         return ELF_NOSECTION;       // There's no string table;
     }
     return dhash_search(elf->secs, (void *) name, (void **) sec)
-           == SHASH_NOTFOUND ? ELF_NOSECTION : ELF_SUCCESS;
+           == DHASH_NOTFOUND ? ELF_NOSECTION : ELF_SUCCESS;
 }
 

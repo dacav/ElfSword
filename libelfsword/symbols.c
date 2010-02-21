@@ -47,7 +47,11 @@ const char *elf_symb_name (elf_t *elf, elf_symb_desc_t *desc)
 elf_err_t elf_symb_seek (elf_t *elf, Elf32_Word sh_type, unsigned index,
                          elf_symb_desc_t *desc)
 {
+    size_t size;
+    uint8_t *start;
     Elf32_Shdr *select;
+    Elf32_Sym *sym;
+
     switch (sh_type) {
         case SHT_DYNSYM:
             select = elf->dynsym;
@@ -59,9 +63,6 @@ elf_err_t elf_symb_seek (elf_t *elf, Elf32_Word sh_type, unsigned index,
             return ELF_WRONGPARAM;
     }
 
-    size_t size;
-    uint8_t *start;
-    Elf32_Sym *sym;
     if (elf_sect_content(elf, select, (void **)&start, &size) !=
             ELF_SUCCESS) {
         return ELF_INVALID;

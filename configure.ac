@@ -19,7 +19,7 @@
 
 AC_INIT([ElfSword], [0.1],
         [Giovanni Simoni <simgidacav@gmail.com>],
-        [elfsword])
+        [libelfsword])
 
 AM_INIT_AUTOMAKE([-Wall])
 

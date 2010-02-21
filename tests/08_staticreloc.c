@@ -2,6 +2,7 @@
 #include <elfsword.h>
 #include <dacav.h>
 #include <assert.h>
+#include <stdint.h>
 
 int main (int argc, char **argv)
 {
@@ -29,8 +30,9 @@ int main (int argc, char **argv)
                elf_sect_name(elf, section),
                elf_sect_name(elf, target));
         printf("\tReloc: r_offset=%p r_info=%p r_addend=%p\n",
-               (void *)rela.r_offset, (void *)rela.r_info,
-               (void *)rela.r_addend);
+               (void *)(uintptr_t)rela.r_offset,
+               (void *)(uintptr_t)rela.r_info,
+               (void *)(uintptr_t)rela.r_addend);
         printf("\tCorresponding symbol: name='%s'\n",
                elf_symb_name(elf, &symbol));
     }

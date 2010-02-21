@@ -4,6 +4,7 @@
 
 #include <elfsword.h>
 #include <dacav.h>
+#include <stdint.h>
 
 int main (int argc, char **argv)
 {
@@ -15,7 +16,7 @@ int main (int argc, char **argv)
     printf("Printout of PROGHEAD entries\n");
     while (diter_hasnext(it)) {
         Elf32_Phdr *ph = (Elf32_Phdr *) diter_next(it);
-        printf("\tEntry %d, virtual=%p\n", n ++, (void *)(ph->p_vaddr));
+        printf("\tEntry %d, virtual=%p\n", n ++, (void *)(uintptr_t)(ph->p_vaddr));
     }
     elf_proghead_iter_free(it);
     elf_release_file(elf);

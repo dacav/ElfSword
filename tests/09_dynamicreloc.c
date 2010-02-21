@@ -5,6 +5,7 @@
 #include <elfsword.h>
 #include <dacav.h>
 #include <elf.h>
+#include <stdint.h>
 
 int main (int argc, char **argv)
 {
@@ -17,8 +18,8 @@ int main (int argc, char **argv)
     while (diter_hasnext(it)) {
         Elf32_Dyn *dyn = (Elf32_Dyn *) diter_next(it);
         printf("\tEntry %d, d_tag=%p d_val=%d d_ptr=%p\n", n ++,
-               (void *)dyn->d_tag, dyn->d_un.d_val,
-               (void *)dyn->d_un.d_ptr);
+               (void *)(uintptr_t)dyn->d_tag, dyn->d_un.d_val,
+               (void *)(uintptr_t)dyn->d_un.d_ptr);
     }
     elf_dynrel_iter_free(it);
     elf_release_file(elf);
