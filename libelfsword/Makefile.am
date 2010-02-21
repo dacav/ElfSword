@@ -14,7 +14,7 @@ include_HEADERS = elfsword.h
 
 libelfsword_la_SOURCES = $(include_HEADERS) \
                         $(includetree_HEADERS) \
-                        algorithms.h descriptor.h algorithms.c check.c \
+                        algorithms.h algorithms.c check.c \
                         elfmap.c sections.c symbols.c proghead.c \
                         statrel.c dynrel.c errors.c
 
