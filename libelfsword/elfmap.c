@@ -69,14 +69,16 @@ static inline
 void init_sections (elf_t *elf, dhash_t *table,
                     Elf32_Shdr **symtab, Elf32_Shdr **dynsym)
 {
-    const char *map;
+    const char *map = NULL;
+    diter_t *iter;
+
     if (table != NULL) {
         map = elf_sect_name(elf, NULL); 
     }
-    diter_t *iter = elf_sect_iter_new(elf, SHT_NULL);
+    iter = elf_sect_iter_new(elf, SHT_NULL);
     while (diter_hasnext(iter)) {
         Elf32_Shdr *sec = diter_next(iter);
-        if (table != NULL) {
+        if (map != NULL) {
             const char *name = map + sec->sh_name;
             dhash_insert(table, (void *)name, (void *)sec);
         }
