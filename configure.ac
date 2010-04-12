@@ -44,10 +44,11 @@ AC_CHECK_HEADER([dacav.h],[],
 AC_ARG_ENABLE([nightelf],
               AS_HELP_STRING([--with-nightelf], [Enable lua binding]))
 
-AS_IF([test "x$enable_nightelf" = "xyes"],[
-    AC_CHECK_HEADERS([lauxlib.h luaconf.h lua.h lualib.h], [],
-                     [AC_MSG_ERROR(Lua not found)])
-    ])
+AS_IF([test "x$enable_nightelf" = "xyes"],
+      [AC_CHECK_HEADERS([lauxlib.h luaconf.h lua.h lualib.h],
+                        [AM_CONDITIONAL([Nightelf], [true])],
+                        [AC_MSG_ERROR(Lua not found)])],
+      [AM_CONDITIONAL([Nightelf], [false])])
 
 AC_C_INLINE
 AC_FUNC_MALLOC
@@ -62,6 +63,7 @@ AC_TYPE_UINT8_T
 
 AC_CONFIG_FILES([Makefile
                  libelfsword/Makefile
+                 libnightelf/Makefile
                  tests/Makefile
                  doc/Doxyfile:doc/Doxyfile.in])
 AC_OUTPUT

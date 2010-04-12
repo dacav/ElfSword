@@ -20,8 +20,17 @@
 ACLOCAL_AMFLAGS = -I m4
 
 EXTRA_DIST = reconf
-SUBDIRS = libelfsword tests
+
+
 .PHONY : doc
+
+SUBDIRS = libelfsword tests
+if Nightelf
+SUBDIRS += libnightelf
+endif
+
+printdebug:
+	@echo $(ENABLE)
 
 doc:
 	cd doc; doxygen; cd ..
