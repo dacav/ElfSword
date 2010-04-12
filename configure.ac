@@ -23,7 +23,7 @@ AC_INIT([ElfSword], [0.1],
 
 AM_INIT_AUTOMAKE([-Wall])
 
-AC_CONFIG_HEADERS([libelfsword/config.h])
+AC_CONFIG_HEADERS([config.h])
 
 AC_PROG_CC
 AC_PROG_LIBTOOL
@@ -36,8 +36,18 @@ AC_CHECK_FUNCS([munmap])
 
 AC_CHECK_HEADERS([fcntl.h stdint.h stdlib.h stdbool.h string.h unistd.h assert.h])
 
+# libdacav is required as dependency.
 AC_CHECK_HEADER([dacav.h],[],
-                [AC_MSG_ERROR(libdacav not found.  Please install libdacav)])
+                [AC_MSG_ERROR(libdacav not found. Please install libdacav)])
+
+# Optionally you may enable nightelf: a lua bindings for libelfsword.
+AC_ARG_ENABLE([nightelf],
+              AS_HELP_STRING([--with-nightelf], [Enable lua binding]))
+
+AS_IF([test "x$enable_nightelf" = "xyes"],[
+    AC_CHECK_HEADERS([lauxlib.h luaconf.h lua.h lualib.h], [],
+                     [AC_MSG_ERROR(Lua not found)])
+    ])
 
 AC_C_INLINE
 AC_FUNC_MALLOC
